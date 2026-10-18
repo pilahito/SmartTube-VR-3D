@@ -10,6 +10,13 @@ var screen: CinemaScreen
 var panel: Node3D
 var ui: Control
 var screen_distance := 10.0
+var beach_world: Node3D
+var forest_world: Node3D
+var forest_active := false
+var spawn_index := 1
+var installed_apps := InstalledApps.new()
+var eco_mode := false
+var curved_screen := true
 
 func _ready() -> void:
 	_init_xr()
@@ -26,9 +33,21 @@ func _ready() -> void:
 		WorldBuilder.build_palm(self, p, rng)
 	WorldBuilder.build_rocks(self, rng, noise)
 	_build_audio()
+	beach_world = Node3D.new()
+	beach_world.name = "Playa"
+	var world_children := get_children()
+	add_child(beach_world)
+	for child in world_children:
+		child.reparent(beach_world)
 	_build_rig()
 	_build_screen()
 	_build_panel()
+	installed_apps.load_favorites()
+	ui.set_favorites(installed_apps.favorites)
+	screen.visible = false
+	screen.player.paused = true
+	if "--preview-forest" in OS.get_cmdline_user_args():
+		_switch_world()
 	sun.shadow_enabled = true
 
 
@@ -40,10 +59,12 @@ func _init_xr() -> void:
 		# Quest: refresco alto si el visor lo permite (90 Hz), si no 72 Hz
 		if xr_interface.has_method("get_available_display_refresh_rates"):
 			var rates: Array = xr_interface.get_available_display_refresh_rates()
-			if rates.has(90.0):
-				xr_interface.display_refresh_rate = 90.0
+			for preferred in [120.0, 90.0, 80.0, 72.0]:
+				if rates.has(preferred):
+					xr_interface.display_refresh_rate = preferred
+					break
 		Engine.physics_ticks_per_second = int(maxf(xr_interface.display_refresh_rate, 72.0))
-		# Foveación fija (también configurada en project.godot)
+		# Foveaci�n fija (tambi�n configurada en project.godot)
 		if "foveation_level" in xr_interface:
 			xr_interface.foveation_level = 3
 			xr_interface.foveation_dynamic = true
@@ -78,7 +99,7 @@ func _build_rig() -> void:
 		mm.albedo_color = Color(0.15, 0.15, 0.18)
 		m.material_override = mm
 		c.add_child(m)
-		# rayo láser
+		# rayo l�ser
 		var pointer: Node3D = load(XRT + "functions/function_pointer.tscn").instantiate()
 		pointer.set("show_target", true)
 		c.add_child(pointer)
@@ -100,7 +121,7 @@ func _build_audio() -> void:
 	ocean.stream = _loop_wav("res://audio/ocean_waves.wav")
 	ocean.position = Vector3(0, 0.5, WorldBuilder.SHORE_Z - 2)
 	ocean.unit_size = 25.0
-	ocean.volume_db = -2.0
+	ocean.volume_db = -24.0
 	ocean.autoplay = true
 	add_child(ocean)
 	var ocean2 := ocean.duplicate()
@@ -141,29 +162,59 @@ func _place_screen() -> void:
 		yaw = camera.global_rotation.y
 	var basis := Basis(Vector3.UP, yaw)
 	screen.global_transform = Transform3D(basis, head + basis * Vector3(0, 0.6, -screen_distance))
-	screen.radius = screen_distance
+	screen.radius = screen_distance if curved_screen else 1000.0
 	screen._rebuild()
 	if panel:
-		panel.global_transform = Transform3D(basis * Basis(Vector3.RIGHT, deg_to_rad(-25)), head + basis * Vector3(0, -0.55, -1.3))
+		panel.global_transform = Transform3D(basis * Basis(Vector3.RIGHT, deg_to_rad(-10)), head + basis * Vector3(0, -0.12, -1.8))
 
 
 func _build_panel() -> void:
 	panel = load(XRT + "objects/viewport_2d_in_3d.tscn").instantiate()
 	panel.name = "PanelControl"
 	add_child(panel)
-	panel.set("screen_size", Vector2(1.0, 0.4))
-	panel.set("viewport_size", Vector2(900, 360))
+	panel.set("screen_size", Vector2(1.65, 1.1))
+	panel.set("viewport_size", Vector2(1200, 800))
 	panel.set("scene", load("res://scenes/ui_panel.tscn"))
 	panel.set("unshaded", true)
 	ui = panel.get_scene_instance()
 	if ui:
 		ui.action.connect(_on_action)
 		ui.volume_changed.connect(func(v): screen.set_volume(v))
+		ui.launch_app.connect(_launch_app)
+		ui.pin_app.connect(_pin_app)
+		ui.unpin_app.connect(_unpin_app)
 	_place_screen()
 
 
 func _on_action(act: String) -> void:
 	match act:
+		"cinema":
+			screen.visible = true
+			screen.player.paused = false
+		"home":
+			screen.visible = false
+			screen.player.paused = true
+		"browser":
+			var err := OS.shell_open("https://www.youtube.com/")
+			ui.show_message("Navegador externo solicitado" if err == OK else "No se pudo abrir el navegador")
+		"apps":
+			var items := installed_apps.list_apps()
+			ui.show_apps(items, installed_apps.error_message)
+		"smarttube": _launch_app(InstalledApps.SMARTTUBE)
+		"quality":
+			eco_mode = not eco_mode
+			get_viewport().scaling_3d_scale = 0.75 if eco_mode else 1.0
+			ui.show_message("Modo ECO: resolucion 3D al 75 %" if eco_mode else "Calidad normal")
+		"curvature":
+			curved_screen = not curved_screen
+			_place_screen()
+			ui.show_message("Pantalla curva" if curved_screen else "Pantalla plana")
+		"world": _switch_world()
+		"seat":
+			spawn_index = (spawn_index + 1) % 3
+			screen_distance = [6.0, 10.0, 16.0][spawn_index]
+			_place_screen()
+			ui.show_message(["Asiento cercano", "Asiento central", "Asiento panoramico"][spawn_index])
 		"play_pause": screen.toggle_play()
 		"seek_back": screen.seek(-10.0)
 		"seek_fwd": screen.seek(10.0)
@@ -176,10 +227,55 @@ func _on_action(act: String) -> void:
 		"recenter": _recenter()
 		"exit": get_tree().quit()
 
+func _launch_app(package_name: String) -> void:
+	if installed_apps.launch(package_name):
+		screen.player.paused = true
+		ui.show_message("App externa solicitada. Vuelve a NebulaVR desde la biblioteca del visor.")
+	else:
+		ui.show_message(installed_apps.error_message)
+
+func _pin_app(package_name: String, label: String) -> void:
+	var added := installed_apps.pin_app(package_name, label)
+	ui.set_favorites(installed_apps.favorites)
+	ui.show_message("Acceso guardado: " + label if added else "No se pudo guardar: puede existir ya o haberse alcanzado el limite.")
+
+func _unpin_app(package_name: String) -> void:
+	installed_apps.unpin_app(package_name)
+	ui.set_favorites(installed_apps.favorites)
+
 
 func _recenter() -> void:
 	XRServer.center_on_hmd(XRServer.RESET_BUT_KEEP_TILT, true)
 	_place_screen.call_deferred()
+
+func _switch_world() -> void:
+	# El reproductor y el rig permanecen vivos al cambiar el escenario.
+	if forest_active:
+		remove_child(forest_world)
+		forest_world.free()
+		forest_world = null
+		add_child(beach_world)
+	else:
+		_stop_world_audio(beach_world)
+		remove_child(beach_world)
+		forest_world = RetroWorld.new()
+		add_child(forest_world)
+	forest_active = not forest_active
+	ui.set_environment("Bosque nocturno" if forest_active else "Playa")
+	ui.show_message("Bosque nocturno" if forest_active else "Playa")
+
+func _exit_tree() -> void:
+	if is_instance_valid(beach_world):
+		_stop_world_audio(beach_world, true)
+	if is_instance_valid(beach_world) and not beach_world.is_inside_tree():
+		beach_world.free()
+
+func _stop_world_audio(world: Node, release_streams := false) -> void:
+	for child in world.get_children():
+		if child is AudioStreamPlayer or child is AudioStreamPlayer3D:
+			child.stop()
+			if release_streams:
+				child.stream = null
 
 
 func _on_right_button(name: String) -> void:
@@ -194,3 +290,20 @@ func _on_right_button(name: String) -> void:
 func _process(_d: float) -> void:
 	if ui and screen and Engine.get_process_frames() % 10 == 0:
 		ui.set_status(screen.is_playing_now(), screen.player.stream_position, screen.player.get_stream_length())
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED and is_instance_valid(screen) and is_instance_valid(screen.player):
+		screen.player.paused = true
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if get_viewport().use_xr or not event is InputEventKey or not event.pressed or event.echo:
+		return
+	match event.keycode:
+		KEY_1: _on_action("cinema")
+		KEY_2: _on_action("world")
+		KEY_3: _on_action("home")
+		KEY_SPACE: _on_action("play_pause")
+		KEY_LEFT: _on_action("seek_back")
+		KEY_RIGHT: _on_action("seek_fwd")
+		KEY_F: _on_action("curvature")
+		KEY_R: _place_screen()
