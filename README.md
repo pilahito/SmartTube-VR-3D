@@ -34,4 +34,4 @@ Para descubrir apps Android se incluye addons/nebula_apps/nebula-visibility.aar,
 
 Referencias revisadas: https://github.com/pilahito/SmartTube-VR-3D y https://github.com/pilahito/SmartTube-VR (launcher y modelo HomeTiles). Se mantienen las licencias de la base y de XR Tools.
 
-El identificador Android original se conserva. Actualizar una APK existente requiere tambien mantener su firma. El repositorio remoto aun no esta renombrado ni contiene estos cambios.
+El identificador Android original se conserva. Actualizar una APK existente requiere tambien mantener su firma. El repositorio remoto aun no esta renombrado; estos cambios se proponen en la rama codex/nebulavr-unified-launcher.

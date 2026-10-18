@@ -217,6 +217,11 @@ func show_message(text: String) -> void:
 func set_environment(title: String) -> void:
 	_environment_label.text = "Tu espacio inmersivo � " + title
 
+func show_cinema(enabled: bool) -> void:
+	_home.visible = not enabled
+	_cinema.visible = enabled
+	_apps.visible = false
+
 func set_status(playing: bool, pos: float, length: float) -> void:
 	if not is_instance_valid(_play):
 		return

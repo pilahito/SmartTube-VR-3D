@@ -189,9 +189,11 @@ func _build_panel() -> void:
 func _on_action(act: String) -> void:
 	match act:
 		"cinema":
+			ui.show_cinema(true)
 			screen.visible = true
 			screen.player.paused = false
 		"home":
+			ui.show_cinema(false)
 			screen.visible = false
 			screen.player.paused = true
 		"browser":

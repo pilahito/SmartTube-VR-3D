@@ -69,7 +69,11 @@ func list_apps() -> Array[Dictionary]:
 			var label_object = info.loadLabel(manager)
 			if _java_error():
 				continue
-			var label := str(label_object.toString()) if label_object != null else package_name
+			var label := package_name
+			if label_object is String:
+				label = label_object
+			elif label_object != null:
+				label = str(label_object.toString())
 			if _java_error():
 				label = package_name
 			seen[package_name] = true
