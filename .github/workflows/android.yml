@@ -1,0 +1,102 @@
+name: APK Meta Quest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.2
+  BUILD_TOOLS: 36.1.0
+  PLATFORM: android-36
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK (plataforma y build-tools para Godot 4.7)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;${PLATFORM}" "build-tools;${BUILD_TOOLS}" "platform-tools" > /dev/null
+
+      - name: Caché de Godot y plantillas
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-stable-android
+
+      - name: Descargar Godot ${{ env.GODOT_VERSION }} y plantillas de exportación
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          base=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable
+          mkdir -p ~/godot ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          curl -fsSL -o /tmp/godot.zip $base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d ~/godot
+          curl -fsSL -o /tmp/tpl.tpz $base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          unzip -q /tmp/tpl.tpz 'templates/android_*' 'templates/version.txt' -d /tmp/tpl
+          mv /tmp/tpl/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Ajustes del editor (rutas de Android y Java)
+        run: |
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.7.tres <<EOT
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          EOT
+
+      - name: Importar proyecto
+        run: |
+          G=~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64
+          timeout 600 $G --headless --import || true
+          timeout 600 $G --headless --import
+
+      - name: Clave de firma
+        if: github.event_name != 'pull_request'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Exportar APK firmado
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          G=~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64
+          mkdir -p build
+          if [ -z "$GODOT_ANDROID_KEYSTORE_RELEASE_PATH" ]; then
+            # PR sin secretos: firma de depuración
+            keytool -genkeypair -keystore "$RUNNER_TEMP/debug.keystore" -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -validity 365 -dname "CN=Android Debug,O=Android,C=US" > /dev/null
+            export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$RUNNER_TEMP/debug.keystore" GODOT_ANDROID_KEYSTORE_RELEASE_USER=androiddebugkey GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=android
+          fi
+          timeout 1500 $G --headless --install-android-build-template --export-release "Meta Quest" build/SmartTube_VR_3D.apk
+          test -s build/SmartTube_VR_3D.apk
+
+      - name: Verificar firma con apksigner
+        run: |
+          "$ANDROID_HOME/build-tools/${BUILD_TOOLS}/apksigner" verify --verbose --print-certs build/SmartTube_VR_3D.apk
+          rm -f "$RUNNER_TEMP"/*.keystore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SmartTube_VR_3D-apk
+          path: build/SmartTube_VR_3D.apk
+          retention-days: 30
