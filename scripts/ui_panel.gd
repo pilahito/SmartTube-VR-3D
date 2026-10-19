@@ -19,6 +19,9 @@ var _app_page := 0
 var _app_rows: VBoxContainer
 var _app_status: Label
 var _organize := false
+var _worlds: VBoxContainer
+var _world_buttons: Array[Button] = []
+var _return_to_cinema := false
 var _environment_label: Label
 
 func _ready() -> void:
@@ -52,7 +55,7 @@ func _ready() -> void:
 	grid.add_child(_btn("Navegador externo", "browser"))
 	grid.add_child(_btn("Anadir app", "apps"))
 	grid.add_child(_btn("Centrar panel", "recenter"))
-	grid.add_child(_btn("Cambiar entorno", "world"))
+	grid.add_child(_btn("Elegir entorno", "worlds"))
 	grid.add_child(_btn("Cambiar asiento", "seat"))
 	grid.add_child(_btn("SmartTube VR", "smarttube"))
 	grid.add_child(_btn("Modo ECO", "quality"))
@@ -84,15 +87,17 @@ func _ready() -> void:
 	root.add_child(_cinema)
 	_time = _label("0:00 / 0:00", 26)
 	_cinema.add_child(_time)
-	var transport := HBoxContainer.new()
+	var transport := GridContainer.new()
+	transport.columns = 3
 	_cinema.add_child(transport)
 	transport.add_child(_btn("-10 s", "seek_back"))
 	_play = _btn("Pausa", "play_pause")
 	transport.add_child(_play)
 	transport.add_child(_btn("+10 s", "seek_fwd"))
 	transport.add_child(_btn("Inicio", "home"))
-	transport.add_child(_btn("Mundo", "world"))
-	var settings := HBoxContainer.new()
+	transport.add_child(_btn("Entornos", "worlds"))
+	var settings := GridContainer.new()
+	settings.columns = 3
 	_cinema.add_child(settings)
 	for item in [["Acercar", "closer"], ["Alejar", "farther"], ["Reducir", "smaller"], ["Ampliar", "bigger"]]:
 		settings.add_child(_btn(item[0], item[1]))
@@ -105,6 +110,20 @@ func _ready() -> void:
 	volume.value_changed.connect(func(v: float): volume_changed.emit(v))
 	_cinema.add_child(_label("Volumen del video", 24))
 	_cinema.add_child(volume)
+	_worlds = VBoxContainer.new()
+	_worlds.visible = false
+	root.add_child(_worlds)
+	_worlds.add_child(_label("Elige tu entorno", 30))
+	var worlds_grid := GridContainer.new()
+	worlds_grid.columns = 2
+	worlds_grid.add_theme_constant_override("h_separation", 16)
+	worlds_grid.add_theme_constant_override("v_separation", 12)
+	_worlds.add_child(worlds_grid)
+	for index in range(6):
+		var button := _btn(["Playa", "Bosque de Hadas", "Observatorio Astral", "Invernadero Abisal", "Expreso Fantasma", "Biblioteca de Mercurio"][index], "world_select:" + str(index))
+		_world_buttons.append(button)
+		worlds_grid.add_child(button)
+	_worlds.add_child(_btn("Volver", "close_worlds"))
 	_message = _label("Gatillo: seleccionar � B: mostrar u ocultar panel", 23)
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(_message)
@@ -145,6 +164,17 @@ func _btn(text: String, command: String) -> Button:
 	button.add_theme_color_override("font_color", Color(0.92, 0.95, 1.0))
 	button.pressed.connect(func():
 		match command:
+			"worlds":
+				_return_to_cinema = _cinema.visible
+				_home.hide()
+				_cinema.hide()
+				_apps.hide()
+				_worlds.show()
+				_world_buttons[0].grab_focus()
+			"close_worlds":
+				_worlds.hide()
+				_cinema.visible = _return_to_cinema
+				_home.visible = not _return_to_cinema
 			"favorites_prev":
 				_favorite_page = maxi(0, _favorite_page - 1)
 				_refresh_favorites()
@@ -165,6 +195,7 @@ func _btn(text: String, command: String) -> Button:
 				_apps.visible = false
 				_home.visible = true
 		if command == "cinema" or command == "home":
+			_worlds.hide()
 			_home.visible = command == "home"
 			_cinema.visible = command == "cinema"
 		action.emit(command))

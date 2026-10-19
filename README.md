@@ -49,6 +49,6 @@ Estas rutas se comprueban automáticamente en escritorio; falta validarlas físi
 
 ### Entornos de esta versión
 
-El botón «Cambiar entorno» recorre Playa, Bosque de Hadas, Observatorio Astral, Invernadero Abisal, Expreso Fantasma y Biblioteca de Mercurio. Los cuatro últimos son prototipos geométricos monocromos con materiales compartidos. La cámara permanece estable; el observatorio gira lentamente y las medusas y estanterías flotan. El cambio conserva la instancia del reproductor.
+El selector «Elegir entorno» permite acceder directamente a Playa, Bosque de Hadas, Observatorio Astral, Invernadero Abisal, Expreso Fantasma y Biblioteca de Mercurio. Los cuatro últimos son prototipos geométricos monocromos con materiales compartidos. La cámara permanece estable; el observatorio gira lentamente y las medusas y estanterías flotan. El cambio conserva la instancia del reproductor.
 
 No incluye aún reproducción de SmartTube dentro de la pantalla 3D: el acceso abre la aplicación externa. Rendimiento, seguimiento óptico de manos y comodidad pendientes de validación en Quest.

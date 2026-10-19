@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           G=~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64
-          for suite in smoke apps; do
+          for suite in smoke apps ui; do
             timeout 120 "$G" --headless --audio-driver Dummy --xr-mode off --script res://tests/$suite.gd 2>&1 | tee /tmp/nebula-$suite.log
             marker=$(echo "$suite" | tr '[:lower:]' '[:upper:]')
             python3 tools/check_godot_log.py /tmp/nebula-$suite.log --marker "NEBULAVR_${marker}_OK"

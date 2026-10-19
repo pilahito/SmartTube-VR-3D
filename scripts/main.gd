@@ -189,6 +189,9 @@ func _build_panel() -> void:
 
 
 func _on_action(act: String) -> void:
+	if act.begins_with("world_select:"):
+		_select_world(act.get_slice(":", 1).to_int())
+		return
 	match act:
 		"cinema":
 			ui.show_cinema(true)
