@@ -46,3 +46,9 @@ El identificador Android original se conserva. Actualizar una APK existente requ
 - Las manos ligeras de XR Tools se animan con gatillo y agarre del mando. No representan seguimiento óptico individual de los dedos.
 
 Estas rutas se comprueban automáticamente en escritorio; falta validarlas físicamente en Quest. El control de volumen permite silencio completo.
+
+### Entornos de esta versión
+
+El botón «Cambiar entorno» recorre Playa, Bosque de Hadas, Observatorio Astral, Invernadero Abisal, Expreso Fantasma y Biblioteca de Mercurio. Los cuatro últimos son prototipos geométricos monocromos con materiales compartidos. La cámara permanece estable; el observatorio gira lentamente y las medusas y estanterías flotan. El cambio conserva la instancia del reproductor.
+
+No incluye aún reproducción de SmartTube dentro de la pantalla 3D: el acceso abre la aplicación externa. Rendimiento, seguimiento óptico de manos y comodidad pendientes de validación en Quest.

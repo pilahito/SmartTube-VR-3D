@@ -31,10 +31,15 @@ func _run() -> void:
 	await process_frame
 	assert(scene.forest_active)
 	assert(scene.screen.player == original_player, "Cambiar mundo recreo el reproductor")
-	scene._on_action("world")
+	scene._select_world(0)
 	await process_frame
 	assert(not scene.forest_active)
 	assert(scene.screen.player == original_player)
+	for id in range(6):
+		scene._select_world(id)
+		await process_frame
+		assert(scene.active_world_id == id)
+		assert(scene.screen.player == original_player)
 	for index in range(3):
 		scene._on_action("seat")
 		assert(scene.screen_distance >= 6 and scene.screen_distance <= 16)

@@ -13,6 +13,8 @@ var screen_distance := 10.0
 var beach_world: Node3D
 var forest_world: Node3D
 var forest_active := false
+var active_world_id := 0
+const WORLD_NAMES := ["Playa", "Bosque de Hadas", "Observatorio Astral", "Invernadero Abisal", "Expreso Fantasma", "Biblioteca de Mercurio"]
 var spawn_index := 1
 var installed_apps := InstalledApps.new()
 var eco_mode := false
@@ -251,20 +253,32 @@ func _recenter() -> void:
 	_place_screen.call_deferred()
 
 func _switch_world() -> void:
-	# El reproductor y el rig permanecen vivos al cambiar el escenario.
-	if forest_active:
+	_select_world((active_world_id + 1) % WORLD_NAMES.size())
+
+func _select_world(id: int) -> void:
+	if id < 0 or id >= WORLD_NAMES.size() or id == active_world_id:
+		return
+	if active_world_id == 0:
+		_stop_world_audio(beach_world)
+		remove_child(beach_world)
+	elif is_instance_valid(forest_world):
 		remove_child(forest_world)
 		forest_world.free()
 		forest_world = null
+	if id == 0:
 		add_child(beach_world)
-	else:
-		_stop_world_audio(beach_world)
-		remove_child(beach_world)
+	elif id == 1:
 		forest_world = RetroWorld.new()
 		add_child(forest_world)
-	forest_active = not forest_active
-	ui.set_environment("Bosque nocturno" if forest_active else "Playa")
-	ui.show_message("Bosque nocturno" if forest_active else "Playa")
+	else:
+		var world := LivingWorld.new()
+		world.world_id = id
+		forest_world = world
+		add_child(world)
+	active_world_id = id
+	forest_active = id != 0
+	ui.set_environment(WORLD_NAMES[id])
+	ui.show_message(WORLD_NAMES[id])
 
 func _exit_tree() -> void:
 	if is_instance_valid(beach_world):

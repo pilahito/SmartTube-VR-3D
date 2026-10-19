@@ -52,7 +52,7 @@ func _ready() -> void:
 	grid.add_child(_btn("Navegador externo", "browser"))
 	grid.add_child(_btn("Anadir app", "apps"))
 	grid.add_child(_btn("Centrar panel", "recenter"))
-	grid.add_child(_btn("Playa / bosque", "world"))
+	grid.add_child(_btn("Cambiar entorno", "world"))
 	grid.add_child(_btn("Cambiar asiento", "seat"))
 	grid.add_child(_btn("SmartTube VR", "smarttube"))
 	grid.add_child(_btn("Modo ECO", "quality"))
