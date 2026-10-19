@@ -174,8 +174,8 @@ func _build_panel() -> void:
 	panel = load(XRT + "objects/viewport_2d_in_3d.tscn").instantiate()
 	panel.name = "PanelControl"
 	add_child(panel)
-	panel.set("screen_size", Vector2(1.65, 1.1))
-	panel.set("viewport_size", Vector2(1200, 800))
+	panel.set("screen_size", Vector2(1.65, 1.24))
+	panel.set("viewport_size", Vector2(1200, 900))
 	panel.set("scene", load("res://scenes/ui_panel.tscn"))
 	panel.set("unshaded", true)
 	ui = panel.get_scene_instance()

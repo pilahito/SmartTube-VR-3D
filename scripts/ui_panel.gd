@@ -26,12 +26,12 @@ var _environment_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var bg := Panel.new()
+	var bg := TextureRect.new()
+	bg.texture = load("res://assets/ui/nebula.svg")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.025, 0.035, 0.08, 0.96)
-	style.set_corner_radius_all(24)
-	bg.add_theme_stylebox_override("panel", style)
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -41,25 +41,33 @@ func _ready() -> void:
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 16)
 	margin.add_child(root)
-	root.add_child(_label("NebulaVR", 44))
-	_environment_label = _label("Tu espacio inmersivo � Playa", 24)
+	var header := HBoxContainer.new()
+	root.add_child(header)
+	var logo := TextureRect.new()
+	logo.texture = load("res://icon.svg")
+	logo.custom_minimum_size = Vector2(58, 58)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	header.add_child(logo)
+	header.add_child(_label("NebulaVR", 42))
+	_environment_label = _label("TU RINCÓN DEL UNIVERSO  /  Playa", 24)
 	root.add_child(_environment_label)
 	_home = VBoxContainer.new()
 	root.add_child(_home)
+	_home.add_child(_label("¿Dónde viajamos hoy?", 34))
+	var cards := HBoxContainer.new()
+	cards.add_theme_constant_override("separation", 16)
+	_home.add_child(cards)
+	cards.add_child(_feature_card("cinema", "Tu sala de cine", "Ponte cómodo · vídeo de prueba", "cinema"))
+	cards.add_child(_feature_card("worlds", "Explora otros mundos", "Seis lugares para desconectar", "worlds"))
+	cards.add_child(_feature_card("apps", "Tus apps, a mano", "Añade tus favoritas al inicio", "apps"))
 	var grid := GridContainer.new()
 	grid.columns = 3
-	grid.add_theme_constant_override("h_separation", 16)
-	grid.add_theme_constant_override("v_separation", 16)
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
 	_home.add_child(grid)
-	grid.add_child(_btn("Cine � video de prueba", "cinema"))
-	grid.add_child(_btn("Navegador externo", "browser"))
-	grid.add_child(_btn("Anadir app", "apps"))
-	grid.add_child(_btn("Centrar panel", "recenter"))
-	grid.add_child(_btn("Elegir entorno", "worlds"))
-	grid.add_child(_btn("Cambiar asiento", "seat"))
-	grid.add_child(_btn("SmartTube VR", "smarttube"))
-	grid.add_child(_btn("Modo ECO", "quality"))
-	grid.add_child(_btn("Salir", "exit"))
+	for item in [["SmartTube VR", "smarttube"], ["Navegador", "browser"], ["Cambiar asiento", "seat"], ["Centrar panel", "recenter"], ["Modo ECO", "quality"], ["Salir", "exit"]]:
+		grid.add_child(_btn(item[0], item[1]))
 	_home.add_child(_label("Mis aplicaciones", 26))
 	_favorites = GridContainer.new()
 	_favorites.columns = 3
@@ -124,9 +132,37 @@ func _ready() -> void:
 		_world_buttons.append(button)
 		worlds_grid.add_child(button)
 	_worlds.add_child(_btn("Volver", "close_worlds"))
-	_message = _label("Gatillo: seleccionar � B: mostrar u ocultar panel", 23)
+	_message = _label("Gatillo / A: elegir   ·   B: panel   ·   Joystick: navegar", 23)
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(_message)
+
+func _feature_card(art: String, title: String, subtitle: String, command: String) -> Button:
+	var button := _btn("", command)
+	button.custom_minimum_size = Vector2(0, 238)
+	button.tooltip_text = subtitle
+	var content := VBoxContainer.new()
+	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.offset_left = 12
+	content.offset_top = 12
+	content.offset_right = -12
+	content.offset_bottom = -12
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(content)
+	var picture := TextureRect.new()
+	picture.texture = load("res://assets/ui/" + art + ".svg")
+	picture.custom_minimum_size.y = 136
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(picture)
+	var heading := _label(title, 25)
+	heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(heading)
+	var caption := _label(subtitle, 17)
+	caption.add_theme_color_override("font_color", Color(0.72, 0.78, 0.9))
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(caption)
+	return button
 
 func _label(text: String, font_size: int) -> Label:
 	var label := Label.new()
@@ -137,9 +173,9 @@ func _label(text: String, font_size: int) -> Label:
 func _btn(text: String, command: String) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(220, 84)
+	button.custom_minimum_size = Vector2(220, 64)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.add_theme_font_size_override("font_size", 26)
+	button.add_theme_font_size_override("font_size", 24)
 	var accent := Color(0.36, 0.7, 1.0)
 	if command == "cinema":
 		accent = Color(0.52, 0.44, 1.0)
@@ -148,10 +184,10 @@ func _btn(text: String, command: String) -> Button:
 	elif command == "apps":
 		accent = Color(0.25, 0.85, 0.7)
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.06, 0.09, 0.16, 0.98)
+	normal.bg_color = Color(0.11, 0.13, 0.23, 0.94)
 	normal.border_color = accent.darkened(0.5)
 	normal.set_border_width_all(1)
-	normal.set_corner_radius_all(12)
+	normal.set_corner_radius_all(18)
 	normal.content_margin_left = 12
 	normal.content_margin_right = 12
 	button.add_theme_stylebox_override("normal", normal)
@@ -246,7 +282,7 @@ func show_message(text: String) -> void:
 	_message.text = text
 
 func set_environment(title: String) -> void:
-	_environment_label.text = "Tu espacio inmersivo � " + title
+	_environment_label.text = "TU RINCÓN DEL UNIVERSO  /  " + title
 
 func show_cinema(enabled: bool) -> void:
 	_home.visible = not enabled
