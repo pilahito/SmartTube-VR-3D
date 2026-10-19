@@ -35,3 +35,14 @@ Para descubrir apps Android se incluye addons/nebula_apps/nebula-visibility.aar,
 Referencias revisadas: https://github.com/pilahito/SmartTube-VR-3D y https://github.com/pilahito/SmartTube-VR (launcher y modelo HomeTiles). Se mantienen las licencias de la base y de XR Tools.
 
 El identificador Android original se conserva. Actualizar una APK existente requiere tambien mantener su firma. El repositorio remoto aun no esta renombrado; estos cambios se proponen en la rama codex/nebulavr-unified-launcher.
+
+### Mandos y manos visibles
+
+- Joystick derecho: navegar por los botones mientras el panel está abierto. El giro se desactiva durante la navegación.
+- A derecho: aceptar el botón seleccionado; con panel oculto, pausar/reanudar.
+- B derecho: mostrar u ocultar y centrar el panel.
+- Menú izquierdo: volver al inicio y recuperar el panel.
+- Pulsar joystick derecho: recentrar.
+- Las manos ligeras de XR Tools se animan con gatillo y agarre del mando. No representan seguimiento óptico individual de los dedos.
+
+Estas rutas se comprueban automáticamente en escritorio; falta validarlas físicamente en Quest. El control de volumen permite silencio completo.

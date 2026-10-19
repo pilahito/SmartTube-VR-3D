@@ -17,6 +17,9 @@ var spawn_index := 1
 var installed_apps := InstalledApps.new()
 var eco_mode := false
 var curved_screen := true
+var right_controller: XRController3D
+var turn_provider: Node
+var navigation_delay := 0.0
 
 func _ready() -> void:
 	_init_xr()
@@ -89,31 +92,28 @@ func _build_rig() -> void:
 		c.name = "Mando_" + hand
 		c.tracker = hand
 		origin.add_child(c)
-		# modelo sencillo del mando
-		var m := MeshInstance3D.new()
-		var cap := CapsuleMesh.new()
-		cap.radius = 0.025; cap.height = 0.14
-		m.mesh = cap
-		m.rotation_degrees.x = 90
-		var mm := StandardMaterial3D.new()
-		mm.albedo_color = Color(0.15, 0.15, 0.18)
-		m.material_override = mm
-		c.add_child(m)
+		c.pose = "aim"
+		var side := "left" if hand == "left_hand" else "right"
+		var hand_model: Node3D = load(XRT + "hands/scenes/lowpoly/" + side + "_hand_low.tscn").instantiate()
+		c.add_child(hand_model)
 		# rayo l�ser
 		var pointer: Node3D = load(XRT + "functions/function_pointer.tscn").instantiate()
 		pointer.set("show_target", true)
 		c.add_child(pointer)
 		if hand == "right_hand":
+			right_controller = c
 			var turn: Node = load(XRT + "functions/movement_turn.tscn").instantiate()
 			turn.set("turn_mode", 1) # SNAP
 			turn.set("step_turn_angle", 30.0)
 			c.add_child(turn)
+			turn_provider = turn
 			c.button_pressed.connect(_on_right_button)
 		else:
 			var tp: Node = load(XRT + "functions/function_teleport.tscn").instantiate()
 			tp.set("teleport_button_action", "grip_click")
 			tp.set("valid_teleport_mask", 1)
 			c.add_child(tp)
+			c.button_pressed.connect(_on_left_button)
 
 
 func _build_audio() -> void:
@@ -280,16 +280,64 @@ func _stop_world_audio(world: Node, release_streams := false) -> void:
 				child.stream = null
 
 
-func _on_right_button(name: String) -> void:
-	# B: mostrar/ocultar el panel delante de ti
-	if name == "by_button" and panel:
-		panel.visible = not panel.visible
-		panel.set("enabled", panel.visible)
-		if panel.visible:
-			_place_screen()
+func _set_panel_visible(value: bool) -> void:
+	panel.visible = value
+	panel.set("enabled", value)
+	if turn_provider:
+		turn_provider.set("enabled", not value)
+	if value:
+		_place_screen()
+		_focus_first_button(ui)
 
+func _focus_first_button(node: Node) -> bool:
+	if node is Button and node.is_visible_in_tree() and not node.disabled:
+		node.grab_focus()
+		return true
+	for child in node.get_children():
+		if _focus_first_button(child):
+			return true
+	return false
 
-func _process(_d: float) -> void:
+func _on_left_button(button: String) -> void:
+	if button == "menu_button":
+		_on_action("home")
+		_set_panel_visible(true)
+
+func _on_right_button(button: String) -> void:
+	match button:
+		"by_button": _set_panel_visible(not panel.visible)
+		"ax_button":
+			if panel.visible:
+				_send_ui_action("ui_accept")
+			else:
+				_on_action("play_pause")
+		"primary_click": _recenter()
+
+func _send_ui_action(action_name: String) -> void:
+	var viewport := panel.get_node("Viewport") as SubViewport
+	var focus := viewport.gui_get_focus_owner()
+	if not is_instance_valid(focus) or not focus.is_visible_in_tree():
+		_focus_first_button(ui)
+	for pressed in [true, false]:
+		var event := InputEventAction.new()
+		event.action = action_name
+		event.pressed = pressed
+		viewport.push_input(event)
+
+func _process(delta: float) -> void:
+	if turn_provider:
+		turn_provider.set("enabled", not panel.visible)
+	navigation_delay = maxf(0.0, navigation_delay - delta)
+	if panel and panel.visible and right_controller and right_controller.get_is_active():
+		var stick := right_controller.get_vector2("primary")
+		if stick.length() < 0.35:
+			navigation_delay = 0.0
+		elif navigation_delay == 0.0 and stick.length() > 0.65:
+			if absf(stick.x) > absf(stick.y):
+				_send_ui_action("ui_right" if stick.x > 0 else "ui_left")
+			else:
+				_send_ui_action("ui_up" if stick.y > 0 else "ui_down")
+			navigation_delay = 0.28
 	if ui and screen and Engine.get_process_frames() % 10 == 0:
 		ui.set_status(screen.is_playing_now(), screen.player.stream_position, screen.player.get_stream_length())
 

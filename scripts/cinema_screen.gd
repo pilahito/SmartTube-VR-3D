@@ -81,7 +81,7 @@ func seek(delta: float) -> void:
 
 
 func set_volume(v: float) -> void:
-	player.volume_db = linear_to_db(maxf(v, 0.001))
+	player.volume = clampf(v, 0.0, 1.0)
 
 
 func is_playing_now() -> bool:
