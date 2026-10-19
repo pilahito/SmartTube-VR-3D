@@ -13,7 +13,7 @@ func _find_button(node: Node, title: String) -> Button:
 	return null
 
 func _check_bounds(node: Node) -> void:
-	if node is Button and node.is_visible_in_tree():
+	if (node is Button or node is Label) and node.is_visible_in_tree():
 		var rect: Rect2 = node.get_global_rect()
 		assert(rect.position.x >= 0 and rect.position.y >= 0)
 		assert(rect.end.x <= 1200 and rect.end.y <= 900, "Botón fuera del panel: " + node.text)
@@ -30,6 +30,8 @@ func _run() -> void:
 	_find_button(ui, "Seis lugares para desconectar").pressed.emit()
 	await process_frame
 	assert(ui._worlds.visible and not ui._home.visible)
+	await process_frame
+	_check_bounds(ui)
 	for index in range(6):
 		ui._world_buttons[index].pressed.emit()
 		assert(scene.active_world_id == index)

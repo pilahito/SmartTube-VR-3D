@@ -22,6 +22,8 @@ var _organize := false
 var _worlds: VBoxContainer
 var _world_buttons: Array[Button] = []
 var _return_to_cinema := false
+var _favorite_controls: HBoxContainer
+var _world_title: Label
 var _environment_label: Label
 
 func _ready() -> void:
@@ -50,29 +52,37 @@ func _ready() -> void:
 	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	header.add_child(logo)
 	header.add_child(_label("NebulaVR", 42))
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(spacer)
+	header.add_child(_btn("Cerrar", "exit"))
 	_environment_label = _label("TU RINCÓN DEL UNIVERSO  /  Playa", 24)
 	root.add_child(_environment_label)
 	_home = VBoxContainer.new()
 	root.add_child(_home)
-	_home.add_child(_label("¿Dónde viajamos hoy?", 34))
+	_home.add_child(_label("Desconecta. Estás en tu universo.", 34))
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 16)
 	_home.add_child(cards)
-	cards.add_child(_feature_card("cinema", "Tu sala de cine", "Ponte cómodo · vídeo de prueba", "cinema"))
-	cards.add_child(_feature_card("worlds", "Explora otros mundos", "Seis lugares para desconectar", "worlds"))
-	cards.add_child(_feature_card("apps", "Tus apps, a mano", "Añade tus favoritas al inicio", "apps"))
+	var hero := _feature_card("cinema", "La mejor butaca es la tuya", "ENTRAR AL CINE   /   Vídeo de demostración", "cinema")
+	hero.size_flags_stretch_ratio = 1.65
+	cards.add_child(hero)
+	var worlds_card := _feature_card("worlds", "Un lugar para perderte", "Seis lugares para desconectar", "worlds")
+	cards.add_child(worlds_card)
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 10)
 	_home.add_child(grid)
-	for item in [["SmartTube VR", "smarttube"], ["Navegador", "browser"], ["Cambiar asiento", "seat"], ["Centrar panel", "recenter"], ["Modo ECO", "quality"], ["Salir", "exit"]]:
+	for item in [["SmartTube VR ↗", "smarttube"], ["Navegador ↗", "browser"], ["Añadir aplicaciones", "apps"], ["Cambiar asiento", "seat"], ["Centrar panel", "recenter"], ["Modo ECO", "quality"]]:
 		grid.add_child(_btn(item[0], item[1]))
 	_home.add_child(_label("Mis aplicaciones", 26))
 	_favorites = GridContainer.new()
 	_favorites.columns = 3
 	_home.add_child(_favorites)
 	var favorite_controls := HBoxContainer.new()
+	_favorite_controls = favorite_controls
+	favorite_controls.hide()
 	_home.add_child(favorite_controls)
 	favorite_controls.add_child(_btn("Anterior", "favorites_prev"))
 	favorite_controls.add_child(_btn("Siguiente", "favorites_next"))
@@ -123,12 +133,14 @@ func _ready() -> void:
 	root.add_child(_worlds)
 	_worlds.add_child(_label("Elige tu entorno", 30))
 	var worlds_grid := GridContainer.new()
-	worlds_grid.columns = 2
+	worlds_grid.columns = 3
 	worlds_grid.add_theme_constant_override("h_separation", 16)
 	worlds_grid.add_theme_constant_override("v_separation", 12)
 	_worlds.add_child(worlds_grid)
 	for index in range(6):
-		var button := _btn(["Playa", "Bosque de Hadas", "Observatorio Astral", "Invernadero Abisal", "Expreso Fantasma", "Biblioteca de Mercurio"][index], "world_select:" + str(index))
+		var title: String = ["Playa", "Bosque de Hadas", "Observatorio Astral", "Invernadero Abisal", "Expreso Fantasma", "Biblioteca de Mercurio"][index]
+		var button := _feature_card("world_" + str(index), title, ["Brisa y horizonte", "Luciérnagas y calma", "Un palco entre estrellas", "Jardín bajo las aguas", "El viaje sin destino", "Historias en suspensión"][index], "world_select:" + str(index))
+		button.custom_minimum_size.y = 220
 		_world_buttons.append(button)
 		worlds_grid.add_child(button)
 	_worlds.add_child(_btn("Volver", "close_worlds"))
@@ -140,6 +152,7 @@ func _feature_card(art: String, title: String, subtitle: String, command: String
 	var button := _btn("", command)
 	button.custom_minimum_size = Vector2(0, 238)
 	button.tooltip_text = subtitle
+	button.accessibility_name = title
 	var content := VBoxContainer.new()
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	content.offset_left = 12
@@ -150,7 +163,7 @@ func _feature_card(art: String, title: String, subtitle: String, command: String
 	button.add_child(content)
 	var picture := TextureRect.new()
 	picture.texture = load("res://assets/ui/" + art + ".svg")
-	picture.custom_minimum_size.y = 136
+	picture.custom_minimum_size.y = 128
 	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -158,7 +171,7 @@ func _feature_card(art: String, title: String, subtitle: String, command: String
 	var heading := _label(title, 25)
 	heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(heading)
-	var caption := _label(subtitle, 17)
+	var caption := _label(subtitle, 19)
 	caption.add_theme_color_override("font_color", Color(0.72, 0.78, 0.9))
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(caption)
@@ -186,13 +199,16 @@ func _btn(text: String, command: String) -> Button:
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0.11, 0.13, 0.23, 0.94)
 	normal.border_color = accent.darkened(0.5)
-	normal.set_border_width_all(1)
+	normal.set_border_width_all(0)
+	normal.shadow_color = Color(0, 0, 0, 0.22)
+	normal.shadow_size = 6
+	normal.shadow_offset = Vector2(0, 4)
 	normal.set_corner_radius_all(18)
 	normal.content_margin_left = 12
 	normal.content_margin_right = 12
 	button.add_theme_stylebox_override("normal", normal)
 	var active := normal.duplicate() as StyleBoxFlat
-	active.bg_color = accent.darkened(0.7)
+	active.bg_color = accent.darkened(0.6)
 	active.border_color = accent
 	active.set_border_width_all(3)
 	for state in ["hover", "pressed", "focus"]:
@@ -249,8 +265,10 @@ func _clear(container: Node) -> void:
 
 func _refresh_favorites() -> void:
 	_clear(_favorites)
+	_favorite_controls.visible = not _favorite_items.is_empty()
 	if _favorite_items.is_empty():
-		_favorites.add_child(_label("Usa Anadir app para fijar tus apps.", 23))
+		var add := _btn("+  Tu espacio, tus aplicaciones. Añade la primera", "apps")
+		_favorites.add_child(add)
 	for index in range(_favorite_page * 3, mini(_favorite_items.size(), (_favorite_page + 1) * 3)):
 		var item := _favorite_items[index]
 		var button := _btn(("Quitar: " if _organize else "") + str(item.label), "favorite")
