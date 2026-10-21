@@ -30,6 +30,8 @@ var right_controller: XRController3D
 var turn_provider: Node
 var navigation_delay := 0.0
 var player_body: Node
+var beach_spawn := Vector3.ZERO
+var _last_log := 0.0
 
 func _ready() -> void:
 	_init_xr()
@@ -53,6 +55,10 @@ func _ready() -> void:
 	for child in world_children:
 		child.reparent(beach_world)
 	_build_rig()
+	# La arena en el centro está a ~0,36 m: si el cuerpo empieza a 0 m queda dentro
+	# de la colisión (que solo frena desde arriba) y cae sin fin bajo la playa.
+	beach_spawn = Vector3(0, WorldBuilder.sand_height(0, 0, noise) + 0.05, 0)
+	origin.position = beach_spawn
 	_build_screen()
 	_build_panel()
 	add_child(panorama_library)
@@ -317,6 +323,10 @@ func _select_world(id: int) -> void:
 		forest_world = null
 	if id == 0:
 		add_child(beach_world)
+		# Los demás suelos están a 0 m y la arena más alta: sin esto se cae a través de ella
+		if player_body and player_body.has_method("teleport"):
+			player_body.teleport(Transform3D(Basis(), beach_spawn))
+			player_body.set("velocity", Vector3.ZERO)
 	elif id == 1:
 		forest_world = RetroWorld.new()
 		add_child(forest_world)
@@ -438,6 +448,7 @@ func _send_ui_action(action_name: String) -> void:
 		viewport.push_input(event)
 
 func _process(delta: float) -> void:
+	_check_fall()
 	if turn_provider:
 		turn_provider.set("enabled", not panel.visible)
 	navigation_delay = maxf(0.0, navigation_delay - delta)
@@ -453,6 +464,26 @@ func _process(delta: float) -> void:
 			navigation_delay = 0.28
 	if ui and screen and Engine.get_process_frames() % 10 == 0:
 		ui.set_status(screen.is_playing_now(), screen.player.stream_position, screen.player.get_stream_length())
+
+## Red de seguridad: si el jugador cae por debajo del mundo, vuelve al punto de partida.
+## Cada 2 s deja en logcat la posición, para diagnosticar en el visor.
+func _check_fall() -> void:
+	if not origin or not camera:
+		return
+	if origin.global_position.y < -3.0:
+		var spawn := beach_spawn if active_world_id == 0 else Vector3(0, 0.05, 0)
+		if player_body and player_body.has_method("teleport"):
+			player_body.teleport(Transform3D(Basis(), spawn))
+			player_body.set("velocity", Vector3.ZERO)
+		else:
+			origin.global_position = spawn
+		print("NebulaVR: caída bajo el mundo, vuelta a ", spawn)
+		_place_screen.call_deferred()
+	var now := Time.get_ticks_msec() / 1000.0
+	if get_viewport().use_xr and now - _last_log > 2.0:
+		_last_log = now
+		print("NebulaVR pos: origen=%s cabeza=%s mundo=%d" % [origin.global_position.snapped(Vector3.ONE * 0.01), camera.global_position.snapped(Vector3.ONE * 0.01), active_world_id])
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_PAUSED and is_instance_valid(screen) and is_instance_valid(screen.player):
