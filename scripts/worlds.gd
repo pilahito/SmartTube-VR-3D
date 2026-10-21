@@ -540,10 +540,14 @@ static func _multi_box(parent: Node3D, size: Vector3, offset: Vector3, positions
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.mesh = b
 	mm.instance_count = positions.size()
+	var placed := PackedVector3Array()
 	for i in positions.size():
-		mm.set_instance_transform(i, Transform3D(Basis(), positions[i] + offset))
+		placed.append(positions[i] + offset)
+		mm.set_instance_transform(i, Transform3D(Basis(), placed[i]))
 	var mmi := MultiMeshInstance3D.new()
 	mmi.multimesh = mm
+	# tools/export_worlds.gd las necesita: sin pantalla, Godot no guarda las posiciones del MultiMesh
+	mmi.set_meta("positions", placed)
 	parent.add_child(mmi)
 
 

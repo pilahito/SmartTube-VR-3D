@@ -71,6 +71,17 @@ Al abrir la app, cada foto aparece en la lista como **360° nombre-del-archivo**
 
 > ⚠️ Esta ruta todavía no se ha probado en unas Quest reales. Si no aparecen tus fotos, avisa.
 
+## Descargar los mundos (página web)
+
+Los mundos se pueden descargar como modelos 3D **GLB** (glTF), junto con las fotos 360°, desde
+**https://pilahito.github.io/SmartTube-VR-3D/**. Cada uno trae una vista previa 3D que se puede girar.
+
+- La página se monta sola con `.github/workflows/pages.yml` en cada cambio de `main`. Exporta los mundos con
+  el mismo código que la app (`tools/export_worlds.gd`), así que siempre coinciden con la última versión.
+- Primera vez: en GitHub, **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+- Para montarla en tu PC: `GODOT=/ruta/a/godot tools/build_site.sh` (queda en `build/site/`).
+- glTF no admite shaders, así que el agua, la arena, la tarima y el planeta salen con colores lisos.
+
 ## Abrir el proyecto en tu PC
 
 Abre la carpeta con **Godot 4.7.2-stable** (*Importar* → `project.godot`). Para exportar a Quest necesitas
