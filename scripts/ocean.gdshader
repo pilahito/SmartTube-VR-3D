@@ -7,6 +7,7 @@ uniform vec4 shallow_color : source_color = vec4(0.10, 0.62, 0.66, 1.0);
 uniform vec4 foam_color : source_color = vec4(0.95, 0.97, 1.0, 1.0);
 uniform float shore_z = -6.0;      // línea de orilla (z del mundo)
 uniform float wave_scale = 1.0;
+uniform vec3 fresnel_color = vec3(0.35, 0.55, 0.75); // reflejo del cielo
 
 varying vec3 wpos;
 varying float crest;
@@ -62,5 +63,5 @@ void fragment() {
 	SPECULAR = 0.6;
 	// Fresnel simple para que el agua refleje el cielo en ángulos rasantes
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0);
-	EMISSION = vec3(0.35, 0.55, 0.75) * fres * 0.25 * (1.0 - foam);
+	EMISSION = fresnel_color * fres * 0.25 * (1.0 - foam);
 }

@@ -57,7 +57,7 @@ static func build_sand(parent: Node3D) -> StaticBody3D:
 	return body
 
 
-static func build_ocean(parent: Node3D) -> MeshInstance3D:
+static func build_ocean(parent: Node3D, preset := "dia") -> MeshInstance3D:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(260, 200)
 	plane.subdivide_width = 160
@@ -65,6 +65,16 @@ static func build_ocean(parent: Node3D) -> MeshInstance3D:
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://scripts/ocean.gdshader")
 	mat.set_shader_parameter("shore_z", SHORE_Z)
+	match preset:
+		"atardecer":
+			mat.set_shader_parameter("deep_color", Color(0.05, 0.12, 0.25))
+			mat.set_shader_parameter("shallow_color", Color(0.2, 0.4, 0.45))
+			mat.set_shader_parameter("fresnel_color", Vector3(1.0, 0.5, 0.25))
+		"noche":
+			mat.set_shader_parameter("deep_color", Color(0.01, 0.03, 0.07))
+			mat.set_shader_parameter("shallow_color", Color(0.03, 0.1, 0.14))
+			mat.set_shader_parameter("foam_color", Color(0.55, 0.6, 0.7))
+			mat.set_shader_parameter("fresnel_color", Vector3(0.12, 0.16, 0.28))
 	plane.material = mat
 	var mi := MeshInstance3D.new()
 	mi.name = "Oceano"
@@ -75,16 +85,9 @@ static func build_ocean(parent: Node3D) -> MeshInstance3D:
 	return mi
 
 
-static func build_environment(parent: Node3D) -> DirectionalLight3D:
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.22, 0.47, 0.85)
-	sky_mat.sky_horizon_color = Color(0.72, 0.84, 0.95)
-	sky_mat.ground_horizon_color = Color(0.72, 0.84, 0.95)
-	sky_mat.ground_bottom_color = Color(0.2, 0.35, 0.5)
-	sky_mat.sun_angle_max = 20.0
-	sky_mat.sun_curve = 0.12
+## Cielo, luz y niebla de la playa. `preset`: "dia", "atardecer" o "noche".
+static func build_environment(parent: Node3D, preset := "dia") -> DirectionalLight3D:
 	var sky := Sky.new()
-	sky.sky_material = sky_mat
 	sky.radiance_size = Sky.RADIANCE_SIZE_64
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
@@ -97,9 +100,6 @@ static func build_environment(parent: Node3D) -> DirectionalLight3D:
 	env.fog_light_color = Color(0.75, 0.85, 0.95)
 	env.fog_density = 0.004
 	env.fog_sky_affect = 0.0
-	var we := WorldEnvironment.new()
-	we.environment = env
-	parent.add_child(we)
 
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sol"
@@ -109,6 +109,49 @@ static func build_environment(parent: Node3D) -> DirectionalLight3D:
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 30.0
+
+	match preset:
+		"noche":
+			var night := ShaderMaterial.new()
+			night.shader = load("res://scripts/night_sky.gdshader")
+			sky.sky_material = night
+			env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+			env.ambient_light_color = Color(0.25, 0.32, 0.5)
+			env.ambient_light_energy = 0.35
+			env.fog_light_color = Color(0.03, 0.05, 0.1)
+			sun.name = "Luna"
+			sun.light_color = Color(0.7, 0.8, 1.0)
+			sun.light_energy = 0.35
+			sun.rotation_degrees = Vector3(-28, 170, 0)
+		"atardecer":
+			var dusk := ProceduralSkyMaterial.new()
+			dusk.sky_top_color = Color(0.18, 0.2, 0.42)
+			dusk.sky_horizon_color = Color(0.98, 0.55, 0.3)
+			dusk.ground_horizon_color = Color(0.9, 0.5, 0.3)
+			dusk.ground_bottom_color = Color(0.15, 0.12, 0.2)
+			dusk.sky_curve = 0.25
+			dusk.sun_angle_max = 25.0
+			dusk.sun_curve = 0.08
+			sky.sky_material = dusk
+			env.ambient_light_energy = 0.7
+			env.fog_light_color = Color(0.95, 0.6, 0.4)
+			env.fog_density = 0.006
+			sun.light_color = Color(1.0, 0.6, 0.35)
+			sun.light_energy = 0.9
+			sun.rotation_degrees = Vector3(-6, 170, 0) # sol bajo, casi en el horizonte
+		_:
+			var day := ProceduralSkyMaterial.new()
+			day.sky_top_color = Color(0.22, 0.47, 0.85)
+			day.sky_horizon_color = Color(0.72, 0.84, 0.95)
+			day.ground_horizon_color = Color(0.72, 0.84, 0.95)
+			day.ground_bottom_color = Color(0.2, 0.35, 0.5)
+			day.sun_angle_max = 20.0
+			day.sun_curve = 0.12
+			sky.sky_material = day
+
+	var we := WorldEnvironment.new()
+	we.environment = env
+	parent.add_child(we)
 	parent.add_child(sun)
 	return sun
 

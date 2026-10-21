@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mundos de NebulaVR</title>
+<meta name="description" content="Descarga los mundos 3D de NebulaVR (GLB) y sus fotos 360°.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script type="module" src="vendor/model-viewer.min.js"></script>
+<style>
+:root {
+  --bg: #0b1016;
+  --card: #141c26;
+  --line: #243142;
+  --text: #e8eef5;
+  --muted: #95a5b8;
+  --accent: #4fb3ff;
+  --accent-text: #04121f;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+header { padding: 48px 0 24px; }
+h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.1; margin: 0 0 12px; }
+.lead { color: var(--muted); max-width: 720px; margin: 0; }
+h2 { font-size: 24px; margin: 40px 0 16px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.preview {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(#3d78c9, #b9d6ef);
+  display: block;
+}
+.preview.dark { background: linear-gradient(#05070c, #1a1e2a); }
+.preview.dusk { background: linear-gradient(#2e2f63, #f08a52); }
+img.preview { object-fit: cover; }
+.body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.body h3 { margin: 0; font-size: 20px; }
+.body p { margin: 0; color: var(--muted); }
+.meta { font-size: 14px; color: var(--muted); }
+.actions { margin-top: auto; padding-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 18px; border-radius: 10px;
+  background: var(--accent); color: var(--accent-text);
+  font-weight: 600; text-decoration: none; border: 0; cursor: pointer; font-size: 15px;
+}
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.hint { font-size: 13px; color: var(--muted); }
+.howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.howto section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px; }
+.howto h3 { margin: 0 0 8px; }
+.howto ol { margin: 0; padding-left: 20px; color: var(--muted); }
+code { background: #0a0f15; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 14px; word-break: break-all; }
+footer { color: var(--muted); font-size: 14px; padding: 40px 0; border-top: 1px solid var(--line); margin-top: 48px; }
+.error { color: #ff8a80; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Mundos de NebulaVR</h1>
+    <p class="lead">Descarga los mundos de la app como modelos 3D (<strong>GLB</strong>, el formato glTF binario) y las
+      fotos 360°. Arrastra en cada vista previa para mirar alrededor, como si estuvieras dentro.</p>
+  </header>
+
+  <h2>Mundos 3D</h2>
+  <div class="grid" id="models"><p class="meta">Cargando…</p></div>
+
+  <h2>Fotos 360°</h2>
+  <div class="grid" id="panoramas"></div>
+
+  <h2>Cómo usarlos</h2>
+  <div class="howto">
+    <section>
+      <h3>En Blender</h3>
+      <ol>
+        <li>Archivo → Importar → glTF 2.0 (.glb/.gltf).</li>
+        <li>Elige el <code>.glb</code> descargado.</li>
+        <li>Para el fondo, pon una foto 360° como textura de entorno del mundo.</li>
+      </ol>
+    </section>
+    <section>
+      <h3>En Windows, Mac o el móvil</h3>
+      <ol>
+        <li>Windows: ábrelo con el Visor 3D.</li>
+        <li>Mac: ábrelo con Vista previa o Reality Composer.</li>
+        <li>Cualquier navegador: <a href="https://modelviewer.dev/editor/">modelviewer.dev/editor</a>.</li>
+      </ol>
+    </section>
+    <section>
+      <h3>Fotos 360° en las Quest</h3>
+      <ol>
+        <li>Descarga la foto y pásala a las Quest.</li>
+        <li>En NebulaVR: <strong>Entornos → Mis panoramas → Importar imagen</strong>, o la carpeta de panoramas (ver la guía del repositorio).</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer>
+    Los modelos se generan automáticamente con el mismo código que la app (<code>tools/export_worlds.gd</code>), así que
+    siempre coinciden con la última versión. Los materiales especiales (agua animada, arena, tarima) se convierten en
+    colores lisos, porque glTF no admite shaders.<br>
+    Modelos y fotos 360°: dominio público (CC0). Código: MIT ·
+    <a href="https://github.com/pilahito">Repositorio en GitHub</a> ·
+    Visor 3D: <a href="https://modelviewer.dev">model-viewer</a> (Apache 2.0).
+  </footer>
+</div>
+
+<script>
+// Fondo de la vista previa para los mundos sin foto 360°.
+const BACKGROUND = { playa_atardecer: "dusk", playa_noche: "dark", cine: "dark", salon: "dusk" };
+// Hacia dónde mira la cámara al empezar (órbita de model-viewer: giro, inclinación, distancia;
+// inclinación < 90° = mirando un poco hacia abajo) y exposición para los interiores oscuros.
+const VIEW = {
+  cine: { orbit: "0deg 78deg 0.3m", exposure: "1.8" },
+  salon: { orbit: "330deg 75deg 0.3m", exposure: "1.1" },
+  playa_noche: { exposure: "0.7" },
+};
+
+function size(bytes) {
+  if (bytes < 1048576) return Math.max(1, Math.round(bytes / 1024)) + " KB";
+  return (bytes / 1048576).toFixed(1).replace(".", ",") + " MB";
+}
+
+function el(tag, attrs = {}, text) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (text) e.textContent = text;
+  return e;
+}
+
+function card(item) {
+  const c = el("article", { class: "card" });
+  if (item.panorama) {
+    c.append(el("img", { class: "preview", src: item.file, alt: item.name, loading: "lazy" }));
+  } else {
+    // Cámara a la altura de los ojos en el punto de partida, mirando hacia la pantalla.
+    const attrs = {
+      class: "preview " + (BACKGROUND[item.id] || ""),
+      src: item.file,
+      alt: "Vista previa 3D de " + item.name,
+      "camera-controls": "",
+      "camera-target": "0m 1.7m 0m",
+      "camera-orbit": (VIEW[item.id] || {}).orbit || "0deg 85deg 0.3m",
+      exposure: (VIEW[item.id] || {}).exposure || "1",
+      "min-camera-orbit": "auto auto 0.1m",
+      "max-camera-orbit": "auto auto 3m",
+      "field-of-view": "70deg",
+      "interaction-prompt": "none",
+      "shadow-intensity": "0",
+      loading: "lazy",
+    };
+    if (item.skybox) attrs["skybox-image"] = item.skybox;
+    c.append(el("model-viewer", attrs));
+  }
+  const b = el("div", { class: "body" });
+  b.append(el("h3", {}, item.name));
+  if (item.description) b.append(el("p", {}, item.description));
+  const facts = [item.panorama ? "JPG 4096×2048" : "GLB", size(item.bytes)];
+  if (item.triangles) facts.push(item.triangles.toLocaleString("es-ES") + " triángulos");
+  b.append(el("div", { class: "meta" }, facts.join(" · ")));
+  const a = el("div", { class: "actions" });
+  const file = item.file.split("/").pop();
+  a.append(el("a", { class: "btn", href: item.file, download: file }, "Descargar"));
+  if (item.panorama) a.append(el("a", { class: "btn ghost", href: item.file, target: "_blank", rel: "noopener" }, "Ver a tamaño completo"));
+  b.append(a);
+  c.append(b);
+  return c;
+}
+
+fetch("worlds.json")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(items => {
+    const models = document.getElementById("models");
+    const panos = document.getElementById("panoramas");
+    models.replaceChildren(...items.filter(i => !i.panorama).map(card));
+    panos.replaceChildren(...items.filter(i => i.panorama).map(card));
+  })
+  .catch(() => {
+    document.getElementById("models").replaceChildren(
+      el("p", { class: "error" }, "No se pudo cargar la lista de mundos. Recarga la página en un momento."));
+  });
+</script>
+</body>
+</html>

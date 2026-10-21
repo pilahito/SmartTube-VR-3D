@@ -24,7 +24,7 @@ func _ready() -> void:
 	player.expand = true
 	player.size = Vector2(854, 480)
 	player.loop = true
-	player.volume_db = linear_to_db(0.8)
+	player.volume_db = linear_to_db(0.25)
 	_viewport.add_child(player)
 
 	_mat = StandardMaterial3D.new()
@@ -81,7 +81,7 @@ func seek(delta: float) -> void:
 
 
 func set_volume(v: float) -> void:
-	player.volume_db = linear_to_db(maxf(v, 0.001))
+	player.volume = clampf(v, 0.0, 1.0)
 
 
 func is_playing_now() -> bool:
