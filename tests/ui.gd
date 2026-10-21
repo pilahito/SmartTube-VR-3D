@@ -37,6 +37,11 @@ func _run() -> void:
 		assert(scene.active_world_id == index)
 		assert(ui._world_buttons[index].get_global_rect().end.x <= 1200)
 		assert(ui._world_buttons[index].get_global_rect().end.y <= 900)
+	_find_button(ui._worlds, "Mis panoramas").pressed.emit()
+	await process_frame
+	assert(ui._panoramas.visible and not ui._worlds.visible)
+	_check_bounds(ui)
+	_find_button(ui._panoramas, "Volver a entornos").pressed.emit()
 	_find_button(ui._worlds, "Volver").pressed.emit()
 	assert(ui._home.visible and not ui._worlds.visible)
 	scene._on_action("cinema")

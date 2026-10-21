@@ -52,3 +52,7 @@ Estas rutas se comprueban automáticamente en escritorio; falta validarlas físi
 El selector «Elegir entorno» permite acceder directamente a Playa, Bosque de Hadas, Observatorio Astral, Invernadero Abisal, Expreso Fantasma y Biblioteca de Mercurio. Los cuatro últimos son prototipos geométricos monocromos con materiales compartidos. La cámara permanece estable; el observatorio gira lentamente y las medusas y estanterías flotan. El cambio conserva la instancia del reproductor.
 
 No incluye aún reproducción de SmartTube dentro de la pantalla 3D: el acceso abre la aplicación externa. Rendimiento, seguimiento óptico de manos y comodidad pendientes de validación en Quest.
+
+## Moon y panoramas 360°
+
+El selector de entornos permite abrir el catálogo oficial de Moon y cargar panoramas locales PNG/JPEG con el vídeo activo. [Uso, formatos y límites](docs/MOON_ENVIRONMENTS_ES.md). Incluye selector nativo de archivos cuando el sistema lo ofrece, pendiente de validar en Quest; los hogares 3D de Moon no se importan.

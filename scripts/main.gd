@@ -17,6 +17,8 @@ var active_world_id := 0
 const WORLD_NAMES := ["Playa", "Bosque de Hadas", "Observatorio Astral", "Invernadero Abisal", "Expreso Fantasma", "Biblioteca de Mercurio"]
 var spawn_index := 1
 var installed_apps := InstalledApps.new()
+var panorama_picker: FileDialog
+var panorama_library := PanoramaLibrary.new()
 var eco_mode := false
 var curved_screen := true
 var right_controller: XRController3D
@@ -47,6 +49,9 @@ func _ready() -> void:
 	_build_rig()
 	_build_screen()
 	_build_panel()
+	add_child(panorama_library)
+	panorama_library.loaded.connect(_apply_panorama)
+	panorama_library.failed.connect(func(message: String): ui.show_message(message))
 	installed_apps.load_favorites()
 	ui.set_favorites(installed_apps.favorites)
 	screen.visible = false
@@ -192,7 +197,20 @@ func _on_action(act: String) -> void:
 	if act.begins_with("world_select:"):
 		_select_world(act.get_slice(":", 1).to_int())
 		return
+	if act.begins_with("panorama_select:"):
+		if panorama_library.request(act.get_slice(":", 1).to_int()):
+			ui.show_message("Cargando panorama…")
+		else:
+			ui.show_message("Espera a que termine la carga y vuelve a intentarlo.")
+		return
 	match act:
+		"panorama_import":
+			_open_panorama_picker()
+		"moon_catalog":
+			var error := OS.shell_open("https://moonvrhome.com/es/environments")
+			ui.show_message("Moon se abre en el navegador externo." if error == OK else "No se pudo abrir Moon.")
+		"panoramas", "panoramas_scan":
+			ui.show_panoramas(panorama_library.scan())
 		"cinema":
 			ui.show_cinema(true)
 			screen.visible = true
@@ -259,6 +277,7 @@ func _switch_world() -> void:
 	_select_world((active_world_id + 1) % WORLD_NAMES.size())
 
 func _select_world(id: int) -> void:
+	panorama_library.cancel()
 	if id < 0 or id >= WORLD_NAMES.size() or id == active_world_id:
 		return
 	if active_world_id == 0:
@@ -282,6 +301,43 @@ func _select_world(id: int) -> void:
 	forest_active = id != 0
 	ui.set_environment(WORLD_NAMES[id])
 	ui.show_message(WORLD_NAMES[id])
+
+func _open_panorama_picker() -> void:
+	if OS.has_feature("android") and not DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG_FILE):
+		ui.show_message("El sistema no ofrece selector de archivos. Usa la carpeta panoramas.")
+		return
+	if not is_instance_valid(panorama_picker):
+		panorama_picker = FileDialog.new()
+		panorama_picker.access = FileDialog.ACCESS_FILESYSTEM
+		panorama_picker.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		panorama_picker.use_native_dialog = true
+		panorama_picker.title = "Importar panorama 360°"
+		panorama_picker.add_filter("*.png,*.jpg,*.jpeg", "Panorama 2:1", "image/png,image/jpeg")
+		ui.add_child(panorama_picker)
+		panorama_picker.file_selected.connect(func(path: String):
+			if panorama_library.request_import(path):
+				ui.show_message("Importando panorama…")
+			else:
+				ui.show_message("Espera a que termine la carga o libera espacio en la biblioteca (máximo 128)."))
+	panorama_picker.popup_centered(Vector2i(1000, 650))
+
+func _apply_panorama(image: Image, title: String) -> void:
+	# Validate/decode first; keep the current world on failure and keep the player.
+	var world := PanoramaLibrary.build_world(image)
+	if active_world_id == 0:
+		_stop_world_audio(beach_world)
+		remove_child(beach_world)
+	elif is_instance_valid(forest_world):
+		remove_child(forest_world)
+		forest_world.free()
+	forest_world = world
+	add_child(world)
+	active_world_id = -1
+	forest_active = true
+	if ui._panoramas.visible:
+		ui.show_panoramas(panorama_library.scan())
+	ui.set_environment(title + " · Panorama 360°")
+	ui.show_message("Panorama aplicado. El vídeo conserva su reproducción.")
 
 func _exit_tree() -> void:
 	if is_instance_valid(beach_world):

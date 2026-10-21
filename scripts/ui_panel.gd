@@ -19,6 +19,11 @@ var _app_page := 0
 var _app_rows: VBoxContainer
 var _app_status: Label
 var _organize := false
+var _panoramas: VBoxContainer
+var _panorama_rows: VBoxContainer
+var _panorama_items := PackedStringArray()
+var _panorama_page := 0
+var _panorama_status: Label
 var _worlds: VBoxContainer
 var _world_buttons: Array[Button] = []
 var _return_to_cinema := false
@@ -143,7 +148,31 @@ func _ready() -> void:
 		button.custom_minimum_size.y = 220
 		_world_buttons.append(button)
 		worlds_grid.add_child(button)
-	_worlds.add_child(_btn("Volver", "close_worlds"))
+	var world_controls := HBoxContainer.new()
+	_worlds.add_child(world_controls)
+	world_controls.add_child(_btn("Volver", "close_worlds"))
+	world_controls.add_child(_btn("Moon ↗", "moon_catalog"))
+	world_controls.add_child(_btn("Mis panoramas", "panoramas"))
+	_panoramas = VBoxContainer.new()
+	_panoramas.hide()
+	root.add_child(_panoramas)
+	_panoramas.add_child(_label("Tus panoramas 360°", 30))
+	var help := _label("PNG / JPEG 2:1 · hasta 4096 × 2048 y 16 MiB.\nImporta imágenes propias o con permiso desde tus archivos.", 23)
+	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_panoramas.add_child(help)
+	_panorama_status = _label("", 23)
+	_panoramas.add_child(_panorama_status)
+	_panorama_rows = VBoxContainer.new()
+	_panoramas.add_child(_panorama_rows)
+	var pages := HBoxContainer.new()
+	_panoramas.add_child(pages)
+	pages.add_child(_btn("Anterior", "panoramas_prev"))
+	pages.add_child(_btn("Siguiente", "panoramas_next"))
+	pages.add_child(_btn("Actualizar", "panoramas_scan"))
+	var import_controls := HBoxContainer.new()
+	_panoramas.add_child(import_controls)
+	import_controls.add_child(_btn("Volver a entornos", "close_panoramas"))
+	import_controls.add_child(_btn("Importar imagen", "panorama_import"))
 	_message = _label("Gatillo / A: elegir   ·   B: panel   ·   Joystick: navegar", 23)
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(_message)
@@ -216,6 +245,15 @@ func _btn(text: String, command: String) -> Button:
 	button.add_theme_color_override("font_color", Color(0.92, 0.95, 1.0))
 	button.pressed.connect(func():
 		match command:
+			"close_panoramas":
+				_panoramas.hide()
+				_worlds.show()
+			"panoramas_prev":
+				_panorama_page = maxi(0, _panorama_page - 1)
+				_refresh_panoramas()
+			"panoramas_next":
+				_panorama_page = mini(maxi(0, (_panorama_items.size() - 1) / 4), _panorama_page + 1)
+				_refresh_panoramas()
 			"worlds":
 				_return_to_cinema = _cinema.visible
 				_home.hide()
@@ -303,6 +341,8 @@ func set_environment(title: String) -> void:
 	_environment_label.text = "TU RINCÓN DEL UNIVERSO  /  " + title
 
 func show_cinema(enabled: bool) -> void:
+	_panoramas.hide()
+	_worlds.hide()
 	_home.visible = not enabled
 	_cinema.visible = enabled
 	_apps.visible = false
@@ -316,3 +356,21 @@ func set_status(playing: bool, pos: float, length: float) -> void:
 func _fmt(seconds: float) -> String:
 	var value := int(maxf(seconds, 0.0))
 	return "%d:%02d" % [value / 60, value % 60]
+
+func show_panoramas(items: PackedStringArray) -> void:
+	_home.hide()
+	_cinema.hide()
+	_apps.hide()
+	_worlds.hide()
+	_panoramas.show()
+	_panorama_items = items
+	_panorama_page = 0
+	_refresh_panoramas()
+
+func _refresh_panoramas() -> void:
+	_clear(_panorama_rows)
+	_panorama_status.text = "%d panoramas · Página %d" % [_panorama_items.size(), _panorama_page + 1] if not _panorama_items.is_empty() else "Aún no hay panoramas. Pulsa Importar imagen."
+	for index in range(_panorama_page * 4, mini(_panorama_items.size(), (_panorama_page + 1) * 4)):
+		var button := _btn(_panorama_items[index].get_basename().left(45), "panorama_select:" + str(index))
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		_panorama_rows.add_child(button)
