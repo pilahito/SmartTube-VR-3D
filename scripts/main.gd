@@ -121,6 +121,9 @@ func _build_rig() -> void:
 	# dentro de la arena (mismo problema y misma solución que en NebularVR).
 	player_body.set("player_calibrate_height", false)
 	player_body.set("player_height_offset", 0.0)
+	# Dentro del visor el cuerpo físico se desplazaba solo por la gravedad sobre la arena
+	# (el origen avanzaba ~1 m en 30 s sin mandos). NebularVR lo resuelve igual.
+	player_body.set("enabled", not get_viewport().use_xr)
 	origin.add_child(player_body)
 
 	for hand in ["left_hand", "right_hand"]:
