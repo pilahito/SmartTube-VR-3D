@@ -1,5 +1,5 @@
-## Pantalla de cine curva que muestra un VideoStreamPlayer a trav�s de un SubViewport.
-## Fase 1: v�deo OGV (Theora) incluido. Fase 2: superficie Android nativa (ExoPlayer).
+## Pantalla de cine curva que muestra un VideoStreamPlayer a través de un SubViewport.
+## Fase 1: vídeo OGV (Theora) incluido. Fase 2: superficie Android nativa (ExoPlayer).
 class_name CinemaScreen
 extends Node3D
 
@@ -34,7 +34,7 @@ func _ready() -> void:
 	_mesh = MeshInstance3D.new()
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_mesh)
-	# marco oscuro detr�s
+	# marco oscuro detrás
 	_rebuild()
 	player.play()
 
@@ -45,7 +45,7 @@ func set_width(w: float) -> void:
 		_rebuild()
 
 
-## Superficie cil�ndrica centrada en el espectador (radio = distancia actual).
+## Superficie cilíndrica centrada en el espectador (radio = distancia actual).
 func _rebuild() -> void:
 	var h := width / ASPECT
 	var arc := width / radius

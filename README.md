@@ -1,4 +1,4 @@
-# NebulaVR 0.3.0 - proyecto unificado Godot
+# NebulaVR 0.4.0 - proyecto unificado Godot
 
 Continuacion de pilahito/SmartTube-VR-3D para Meta Quest con Godot 4.7.2.
 
@@ -30,7 +30,7 @@ YouTube real integrado en la textura 3D, SponsorBlock y DeArrow conectados a ese
 ## Alcance de la unificacion
 NebulaVR incorpora y continua el proyecto Godot SmartTube-VR-3D en una unica escena principal y un unico proyecto. SmartTube-VR es una app Android 2D distinta: abrirla desde NebulaVR no equivale a integrar su motor en la pantalla 3D. No se incluye su APK ni se afirma una fusion binaria completa.
 
-Para descubrir apps Android se incluye addons/nebula_apps/nebula-visibility.aar, una biblioteca sin codigo que aporta declaraciones queries al manifiesto al exportar con Gradle. Puede regenerarse con tools/build_visibility_aar.ps1. No solicita QUERY_ALL_PACKAGES.
+Para descubrir apps Android, el plugin `addons/nebula_apps` añade al exportar (build con Gradle) las declaraciones `<queries>` del manifiesto: apps con lanzador normal, de TV y de VR, las versiones de SmartTube (`org.smarttube.stable`, `org.smarttube.beta`, `app.smarttube.fdroid.vr`) y Brave. No solicita QUERY_ALL_PACKAGES. El botón SmartTube abre la primera de esas versiones que esté instalada.
 
 Referencias revisadas: https://github.com/pilahito/SmartTube-VR-3D y https://github.com/pilahito/SmartTube-VR (launcher y modelo HomeTiles). Se mantienen las licencias de la base y de XR Tools.
 

@@ -3,6 +3,8 @@ extends RefCounted
 
 const SAVE_PATH := "user://launcher_apps.json"
 const SMARTTUBE := "app.smarttube.fdroid.vr"
+## Paquetes con los que se instala SmartTube (estable, beta y la versión VR), en orden de preferencia.
+const SMARTTUBE_PACKAGES := ["org.smarttube.stable", "org.smarttube.beta", SMARTTUBE]
 var error_message := ""
 var favorites: Array[Dictionary] = []
 var storage_path := SAVE_PATH
@@ -110,6 +112,16 @@ func launch(package_name: String) -> bool:
 	if _java_error():
 		return false
 	return true
+
+## Abre la primera versión de SmartTube que esté instalada.
+func launch_smarttube() -> bool:
+	for package_name: String in SMARTTUBE_PACKAGES:
+		if launch(package_name):
+			return true
+		if not available():
+			return false
+	error_message = "SmartTube no está instalada en este visor."
+	return false
 
 func valid_package(value: String) -> bool:
 	var pattern := RegEx.new()

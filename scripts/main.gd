@@ -72,20 +72,33 @@ func _init_xr() -> void:
 	if xr_interface and xr_interface.is_initialized():
 		get_viewport().use_xr = true
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-		# Quest: refresco alto si el visor lo permite (90 Hz), si no 72 Hz
-		if xr_interface.has_method("get_available_display_refresh_rates"):
-			var rates: Array = xr_interface.get_available_display_refresh_rates()
-			for preferred in [120.0, 90.0, 80.0, 72.0]:
-				if rates.has(preferred):
-					xr_interface.display_refresh_rate = preferred
-					break
-		Engine.physics_ticks_per_second = int(maxf(xr_interface.display_refresh_rate, 72.0))
-		# Foveaci�n fija (tambi�n configurada en project.godot)
+		# El visor solo anuncia sus frecuencias cuando la sesión OpenXR ha empezado
+		if xr_interface.has_signal("session_begun"):
+			xr_interface.session_begun.connect(_choose_refresh_rate)
+		# Con el seguimiento ya activo, volver a poner la pantalla y el panel delante de la cabeza
+		if xr_interface.has_signal("session_focussed"):
+			xr_interface.session_focussed.connect(func(): _place_screen.call_deferred())
+		if xr_interface.has_signal("pose_recentered"):
+			xr_interface.pose_recentered.connect(func(): _place_screen.call_deferred())
+		# Foveación fija (también configurada en project.godot)
 		if "foveation_level" in xr_interface:
 			xr_interface.foveation_level = 3
 			xr_interface.foveation_dynamic = true
 	else:
 		print("OpenXR no disponible: modo escritorio para pruebas")
+
+
+## 90 Hz si el visor lo permite: en Quest 3 la playa usa ~56 % de GPU a 72 Hz,
+## así que 120 Hz dejaría muy poco margen; 72 Hz como último recurso.
+func _choose_refresh_rate() -> void:
+	var rates: Array = xr_interface.get_available_display_refresh_rates()
+	for preferred in [90.0, 80.0, 72.0]:
+		for rate in rates:
+			if is_equal_approx(float(rate), preferred):
+				xr_interface.display_refresh_rate = float(rate)
+				Engine.physics_ticks_per_second = int(round(float(rate)))
+				print("NebulaVR: refresco %d Hz (disponibles: %s)" % [int(round(float(rate))), str(rates)])
+				return
 
 
 func _build_rig() -> void:
@@ -109,7 +122,7 @@ func _build_rig() -> void:
 		var side := "left" if hand == "left_hand" else "right"
 		var hand_model: Node3D = load(XRT + "hands/scenes/lowpoly/" + side + "_hand_low.tscn").instantiate()
 		c.add_child(hand_model)
-		# rayo l�ser
+		# rayo láser
 		var pointer: Node3D = load(XRT + "functions/function_pointer.tscn").instantiate()
 		pointer.set("show_target", true)
 		c.add_child(pointer)
@@ -173,6 +186,10 @@ func _place_screen() -> void:
 	if camera:
 		head = camera.global_position
 		yaw = camera.global_rotation.y
+		# Antes de que el visor dé la postura la cabeza está a ras de suelo: el panel
+		# quedaría bajo la arena. Se usa la altura de los ojos hasta que haya seguimiento.
+		if origin and head.y - origin.global_position.y < 0.5:
+			head.y = origin.global_position.y + 1.7
 	var basis := Basis(Vector3.UP, yaw)
 	screen.global_transform = Transform3D(basis, head + basis * Vector3(0, 0.6, -screen_distance))
 	screen.radius = screen_distance if curved_screen else 1000.0
@@ -231,7 +248,12 @@ func _on_action(act: String) -> void:
 		"apps":
 			var items := installed_apps.list_apps()
 			ui.show_apps(items, installed_apps.error_message)
-		"smarttube": _launch_app(InstalledApps.SMARTTUBE)
+		"smarttube":
+			if installed_apps.launch_smarttube():
+				screen.player.paused = true
+				ui.show_message("SmartTube solicitada. Vuelve a NebulaVR desde la biblioteca del visor.")
+			else:
+				ui.show_message(installed_apps.error_message)
 		"quality":
 			eco_mode = not eco_mode
 			get_viewport().scaling_3d_scale = 0.75 if eco_mode else 1.0
@@ -303,10 +325,13 @@ func _select_world(id: int) -> void:
 		forest_world.name = WORLD_NAMES[id]
 		add_child(forest_world)
 		var info := Worlds.build(BUILT_WORLDS[id - BUILT_WORLDS_START], forest_world)
+		# Cada sala trae su pantalla: así no queda detrás de una pared si antes estaba a 25 m
+		screen_distance = info.screen_distance
+		screen.width = info.screen_width
 		# Las salas tienen paredes: volver al punto de partida por si te habías movido por la playa
 		if player_body and player_body.has_method("teleport"):
 			player_body.teleport(Transform3D(Basis(), info.spawn))
-			_place_screen.call_deferred()
+		_place_screen.call_deferred()
 	else:
 		var world := LivingWorld.new()
 		world.world_id = id
