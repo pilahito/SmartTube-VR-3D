@@ -37,11 +37,29 @@ var _return_to_cinema := false
 var _favorite_controls: HBoxContainer
 var _world_title: Label
 var _environment_label: Label
+var _bg: TextureRect
+## Tinte del fondo del panel por entorno (índice de WORLD_NAMES en main.gd). -1 = sin tinte.
+const THEMES := {
+	0: Color(0.75, 0.95, 1.0),    # Playa
+	1: Color(0.7, 1.0, 0.75),     # Bosque de Hadas
+	2: Color(0.7, 0.75, 1.0),     # Observatorio Astral
+	3: Color(0.6, 1.0, 0.9),      # Invernadero Abisal
+	4: Color(1.0, 0.85, 0.6),     # Expreso Fantasma
+	5: Color(1.0, 0.9, 0.7),      # Biblioteca de Mercurio
+	6: Color(1.0, 0.8, 0.65),     # Playa al atardecer
+	7: Color(0.6, 0.7, 1.0),      # Playa de noche
+	8: Color(1.0, 0.6, 0.6),      # Sala de cine
+	9: Color(1.0, 0.9, 0.75),     # Salón
+	10: Color(0.85, 0.75, 1.0),   # Espacio
+	11: Color(0.7, 1.0, 0.85),    # Aurora boreal 360°
+	12: Color(1.0, 0.75, 0.95),   # Nebulosa 360°
+}
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := TextureRect.new()
 	bg.texture = load("res://assets/ui/nebula.svg")
+	_bg = bg
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
@@ -364,6 +382,12 @@ func show_message(text: String) -> void:
 
 func set_environment(title: String) -> void:
 	_environment_label.text = "TU RINCÓN DEL UNIVERSO  /  " + title
+
+
+## Cambia el estilo del panel al del entorno `world_index`; -1 (panorama) deja el fondo base.
+func set_world_theme(world_index: int) -> void:
+	if _bg:
+		_bg.modulate = THEMES.get(world_index, Color.WHITE)
 
 func show_cinema(enabled: bool) -> void:
 	_panoramas.hide()

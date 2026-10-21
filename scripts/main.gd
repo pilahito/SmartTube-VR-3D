@@ -357,6 +357,7 @@ func _select_world(id: int) -> void:
 	active_world_id = id
 	forest_active = id != 0
 	ui.set_environment(WORLD_NAMES[id])
+	ui.set_world_theme(id)
 	ui.show_message(WORLD_NAMES[id])
 
 func _open_panorama_picker() -> void:
@@ -394,6 +395,7 @@ func _apply_panorama(image: Image, title: String) -> void:
 	if ui._panoramas.visible:
 		ui.show_panoramas(panorama_library.scan())
 	ui.set_environment(title + " · Panorama 360°")
+	ui.set_world_theme(-1)
 	ui.show_message("Panorama aplicado. El vídeo conserva su reproducción.")
 
 func _exit_tree() -> void:
