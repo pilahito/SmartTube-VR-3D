@@ -1,35 +1,69 @@
-## Escena principal: playa inmersiva + pantalla de cine + control con mandos.
+## Escena principal: mundo inmersivo (cambiable) + pantalla de cine + control con mandos.
 extends Node3D
 
 const XRT := "res://addons/godot-xr-tools/"
+const SETTINGS_PATH := "user://ajustes.cfg"
 
 var xr_interface: XRInterface
 var origin: XROrigin3D
 var camera: XRCamera3D
+var player_body: Node
 var screen: CinemaScreen
 var panel: Node3D
 var ui: Control
 var screen_distance := 10.0
+var worlds: Array = []
+var world_index := 0
+var _world: Node3D
 
 func _ready() -> void:
 	_init_xr()
-	var sun := WorldBuilder.build_environment(self)
-	var sand := WorldBuilder.build_sand(self)
-	WorldBuilder.build_ocean(self)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 2026
-	var noise: FastNoiseLite = sand.get_meta("noise")
-	var palm_spots := [Vector3(-7, 0, 3), Vector3(-9.5, 0, 7), Vector3(8, 0, 2), Vector3(11, 0, 6),
-		Vector3(-15, 0, 12), Vector3(16, 0, 11), Vector3(-4, 0, 14), Vector3(5, 0, 16), Vector3(-22, 0, 5), Vector3(24, 0, 4)]
-	for p in palm_spots:
-		p.y = WorldBuilder.sand_height(p.x, p.z, noise) - 0.1
-		WorldBuilder.build_palm(self, p, rng)
-	WorldBuilder.build_rocks(self, rng, noise)
-	_build_audio()
 	_build_rig()
 	_build_screen()
 	_build_panel()
-	sun.shadow_enabled = true
+	worlds = Worlds.catalog()
+	_load_world(_saved_world_index())
+
+
+## Borra el mundo actual y construye el de la posición `index` del catálogo.
+func _load_world(index: int) -> void:
+	world_index = wrapi(index, 0, worlds.size())
+	var entry: Dictionary = worlds[world_index]
+	if _world:
+		_world.queue_free()
+	_world = Node3D.new()
+	_world.name = "Mundo"
+	add_child(_world)
+	var info := Worlds.build(entry.id, _world)
+	# Volver al punto de partida del nuevo mundo (el anterior puede tener otra forma)
+	if player_body and player_body.has_method("teleport"):
+		player_body.teleport(Transform3D(Basis(), info.spawn))
+		player_body.set("velocity", Vector3.ZERO)
+	elif origin:
+		origin.global_position = info.spawn
+	screen_distance = info.screen_distance
+	screen.width = info.screen_width
+	_place_screen.call_deferred()
+	if ui:
+		ui.set_world_name(entry.name)
+	_save_world(entry.id)
+
+
+func _saved_world_index() -> int:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) == OK:
+		var id: String = cfg.get_value("mundo", "id", "")
+		for i in worlds.size():
+			if worlds[i].id == id:
+				return i
+	return 0
+
+
+func _save_world(id: String) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS_PATH)
+	cfg.set_value("mundo", "id", id)
+	cfg.save(SETTINGS_PATH)
 
 
 func _init_xr() -> void:
@@ -58,10 +92,10 @@ func _build_rig() -> void:
 	camera = XRCamera3D.new()
 	camera.name = "Camera"
 	camera.position = Vector3(0, 1.7, 0)
-	camera.far = 400.0
+	camera.far = 1000.0
 	origin.add_child(camera)
-	var body: Node = load(XRT + "player/player_body.tscn").instantiate()
-	origin.add_child(body)
+	player_body = load(XRT + "player/player_body.tscn").instantiate()
+	origin.add_child(player_body)
 
 	for hand in ["left_hand", "right_hand"]:
 		var c := XRController3D.new()
@@ -95,37 +129,6 @@ func _build_rig() -> void:
 			c.add_child(tp)
 
 
-func _build_audio() -> void:
-	var ocean := AudioStreamPlayer3D.new()
-	ocean.stream = _loop_wav("res://audio/ocean_waves.wav")
-	ocean.position = Vector3(0, 0.5, WorldBuilder.SHORE_Z - 2)
-	ocean.unit_size = 25.0
-	ocean.volume_db = -2.0
-	ocean.autoplay = true
-	add_child(ocean)
-	var ocean2 := ocean.duplicate()
-	ocean2.position = Vector3(-25, 0.5, WorldBuilder.SHORE_Z - 2)
-	add_child(ocean2)
-	var ocean3 := ocean.duplicate()
-	ocean3.position = Vector3(25, 0.5, WorldBuilder.SHORE_Z - 2)
-	add_child(ocean3)
-	var wind := AudioStreamPlayer.new()
-	wind.stream = _loop_wav("res://audio/wind.wav")
-	wind.volume_db = -16.0
-	wind.autoplay = true
-	add_child(wind)
-
-
-func _loop_wav(path: String) -> AudioStream:
-	var s: AudioStream = load(path)
-	if s is AudioStreamWAV:
-		var w := s as AudioStreamWAV
-		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		w.loop_begin = 0
-		w.loop_end = int(w.get_length() * w.mix_rate)
-	return s
-
-
 func _build_screen() -> void:
 	screen = CinemaScreen.new()
 	screen.name = "PantallaCine"
@@ -151,8 +154,8 @@ func _build_panel() -> void:
 	panel = load(XRT + "objects/viewport_2d_in_3d.tscn").instantiate()
 	panel.name = "PanelControl"
 	add_child(panel)
-	panel.set("screen_size", Vector2(1.0, 0.4))
-	panel.set("viewport_size", Vector2(900, 360))
+	panel.set("screen_size", Vector2(1.0, 0.5))
+	panel.set("viewport_size", Vector2(900, 450))
 	panel.set("scene", load("res://scenes/ui_panel.tscn"))
 	panel.set("unshaded", true)
 	ui = panel.get_scene_instance()
@@ -174,6 +177,8 @@ func _on_action(act: String) -> void:
 		"smaller": screen.width -= 1.0
 		"bigger": screen.width += 1.0
 		"recenter": _recenter()
+		"world_prev": _load_world(world_index - 1)
+		"world_next": _load_world(world_index + 1)
 		"exit": get_tree().quit()
 
 

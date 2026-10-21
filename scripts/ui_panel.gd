@@ -8,9 +8,10 @@ var _title: Label
 var _time: Label
 var _play_btn: Button
 var _vol: HSlider
+var _world: Label
 
 func _ready() -> void:
-	size = Vector2(900, 360)
+	size = Vector2(900, 450)
 	var bg := Panel.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var sb := StyleBoxFlat.new()
@@ -27,7 +28,7 @@ func _ready() -> void:
 
 	var top := HBoxContainer.new()
 	root.add_child(top)
-	_title = _label("SmartTube VR 3D · Playa", 34)
+	_title = _label("SmartTube VR 3D", 34)
 	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(_title)
 	_time = _label("0:00 / 0:00", 30)
@@ -50,6 +51,21 @@ func _ready() -> void:
 	row2.add_child(_btn("Más lejos", "farther"))
 	row2.add_child(_btn("Más pequeña", "smaller"))
 	row2.add_child(_btn("Más grande", "bigger"))
+
+	var row_world := HBoxContainer.new()
+	row_world.add_theme_constant_override("separation", 12)
+	root.add_child(row_world)
+	var prev := _btn("◀ Mundo", "world_prev")
+	prev.size_flags_horizontal = Control.SIZE_FILL
+	row_world.add_child(prev)
+	_world = _label("", 30)
+	_world.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_world.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_world.clip_text = true
+	row_world.add_child(_world)
+	var next := _btn("Mundo ▶", "world_next")
+	next.size_flags_horizontal = Control.SIZE_FILL
+	row_world.add_child(next)
 
 	var row3 := HBoxContainer.new()
 	row3.add_theme_constant_override("separation", 16)
@@ -78,6 +94,11 @@ func _btn(t: String, act: String) -> Button:
 	b.add_theme_font_size_override("font_size", 28)
 	b.pressed.connect(func(): action.emit(act))
 	return b
+
+
+func set_world_name(world_name: String) -> void:
+	if _world:
+		_world.text = world_name
 
 
 func set_status(playing: bool, pos: float, length: float) -> void:

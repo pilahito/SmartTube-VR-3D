@@ -16,6 +16,22 @@ hecha con **Godot 4.7.2** y OpenXR.
 - **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
 - **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
 - **Panel de control** que se maneja con el rayo láser de los mandos.
+- **8 mundos para elegir** desde el panel (la app recuerda el último que usaste):
+
+| Mundo | Qué es |
+|---|---|
+| Playa (día) | La playa original. |
+| Playa (atardecer) | Sol bajo sobre el mar, cielo naranja y agua con reflejos cálidos. |
+| Playa (noche) | Cielo estrellado, luna, mar oscuro y una hoguera que parpadea. |
+| Sala de cine | Sala grande con butacas rojas, telones, apliques en las paredes y luz que sale de la pantalla. |
+| Salón | Salón con tarima de madera, sofá, estantería con libros, plantas, lámpara y ventanal al atardecer. |
+| Espacio | Plataforma flotante con borde de luz, un planeta gigante con anillos, una luna y una nebulosa de fondo. |
+| 360° Aurora boreal | Foto 360° de una aurora sobre un lago helado. |
+| 360° Nebulosa | Foto 360° del espacio profundo. |
+
+  Todos los mundos están hechos por código o generados para este proyecto. No se usa ningún recurso de
+  otras apps de VR.
+- **Tus propias fotos 360°**: aparecen como mundos nuevos (ver más abajo).
 
 ## Controles
 
@@ -24,6 +40,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 | Pulsar botones del panel | Apunta con el láser (cualquier mando) y aprieta el **gatillo** |
 | Reproducir / pausa, ±10 s, volumen | Botones y barra del panel |
 | Acercar / alejar, agrandar / achicar la pantalla | Botones del panel |
+| Cambiar de mundo | Botones **◀ Mundo** y **Mundo ▶** del panel |
 | Centrar la vista | Botón **Centrar** |
 | Mostrar / ocultar el panel | Botón **B** (mando derecho) |
 | Girar | **Joystick derecho** izquierda/derecha (giro por pasos de 30°) |
@@ -37,6 +54,22 @@ hecha con **Godot 4.7.2** y OpenXR.
 3. Ábrelo desde **Biblioteca → Orígenes desconocidos**.
 
 Todas las versiones van firmadas con la misma clave, así que las nuevas se instalan encima sin perder nada.
+
+## Tus propias fotos 360°
+
+Copia fotos **equirectangulares** (proporción 2:1, en JPG, PNG o WebP) a esta carpeta de las Quest
+(con SideQuest o con `adb push`):
+
+```
+/sdcard/Android/data/app.smarttube.vr3d/files/panoramas/
+```
+
+Por ejemplo: `adb push mi_foto.jpg /sdcard/Android/data/app.smarttube.vr3d/files/panoramas/`
+
+Al abrir la app, cada foto aparece en la lista como **360° nombre-del-archivo**. Si la foto mide más de
+4096 px de ancho, se reduce al cargarla para no gastar demasiada memoria.
+
+> ⚠️ Esta ruta todavía no se ha probado en unas Quest reales. Si no aparecen tus fotos, avisa.
 
 ## Abrir el proyecto en tu PC
 
@@ -64,7 +97,7 @@ En la fase 2 se cambiará por una **capa de composición OpenXR con superficie A
 - Reproducción real de YouTube (extractor de SmartTube / NewPipeExtractor) en la superficie Android nativa.
 - Búsqueda y navegación de vídeos en un panel 3D.
 - SponsorBlock y DeArrow, como en SmartTube VR.
-- Más mundos: playa al atardecer y de noche, bosque mágico, salones, cine.
+- Más mundos: bosque mágico.
 - Seguimiento de manos.
 
 ## Créditos y licencias
@@ -74,4 +107,5 @@ En la fase 2 se cambiará por una **capa de composición OpenXR con superficie A
 - [Godot OpenXR Vendors](https://github.com/GodotVR/godot_openxr_vendors) 5.1.0 — MIT (incluye el OpenXR loader de Meta con su licencia en `addons/godotopenxrvendors/meta/`).
 - [Godot XR Tools](https://github.com/GodotVR/godot-xr-tools) 4.5.2 — MIT.
 - Vídeo de prueba: fragmento de **Big Buck Bunny** © Blender Foundation, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — peach.blender.org.
-- Sonidos de olas y viento: generados por código para este proyecto, dominio público (CC0).
+- Sonidos de olas, viento y del espacio: generados por código para este proyecto, dominio público (CC0).
+- Panoramas 360° (aurora boreal y nebulosa): generados por código con `tools/generate_assets.py`, dominio público (CC0).
