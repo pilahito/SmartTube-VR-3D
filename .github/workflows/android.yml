@@ -87,16 +87,16 @@ jobs:
               -keyalg RSA -validity 365 -dname "CN=Android Debug,O=Android,C=US" > /dev/null
             export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$RUNNER_TEMP/debug.keystore" GODOT_ANDROID_KEYSTORE_RELEASE_USER=androiddebugkey GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=android
           fi
-          timeout 1500 $G --headless --install-android-build-template --export-release "Meta Quest" build/SmartTube_VR_3D.apk
-          test -s build/SmartTube_VR_3D.apk
+          timeout 1500 $G --headless --install-android-build-template --export-release "Meta Quest" build/Nebular_VR_3D.apk
+          test -s build/Nebular_VR_3D.apk
 
       - name: Verificar firma con apksigner
         run: |
-          "$ANDROID_HOME/build-tools/${BUILD_TOOLS}/apksigner" verify --verbose --print-certs build/SmartTube_VR_3D.apk
+          "$ANDROID_HOME/build-tools/${BUILD_TOOLS}/apksigner" verify --verbose --print-certs build/Nebular_VR_3D.apk
           rm -f "$RUNNER_TEMP"/*.keystore
 
       - uses: actions/upload-artifact@v4
         with:
-          name: SmartTube_VR_3D-apk
-          path: build/SmartTube_VR_3D.apk
+          name: Nebular_VR_3D-apk
+          path: build/Nebular_VR_3D.apk
           retention-days: 30

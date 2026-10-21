@@ -28,7 +28,7 @@ func _ready() -> void:
 
 	var top := HBoxContainer.new()
 	root.add_child(top)
-	_title = _label("SmartTube VR 3D", 34)
+	_title = _label("Nebular VR 3D", 34)
 	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(_title)
 	_time = _label("0:00 / 0:00", 30)

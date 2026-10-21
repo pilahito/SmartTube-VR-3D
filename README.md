@@ -1,4 +1,4 @@
-# SmartTube VR 3D 🏝️
+# Nebular VR 3D 🏝️
 
 Una playa **en 3D de verdad** para las Meta Quest, con una pantalla de cine gigante delante de ti.
 No es una foto de fondo: hay mar con olas que se mueven, arena por la que puedes caminar
@@ -49,11 +49,14 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 ## Instalar en las Quest
 
-1. Descarga el APK `SmartTube_VR_3D.apk` (en *Actions* → último build → artefacto `SmartTube_VR_3D-apk`, o en *Releases* cuando se publique).
-2. Instálalo con SideQuest o con `adb install SmartTube_VR_3D.apk` (las Quest deben estar en modo desarrollador).
+1. Descarga el APK `Nebular_VR_3D.apk` (en *Actions* → último build → artefacto `Nebular_VR_3D-apk`, o en *Releases* cuando se publique).
+2. Instálalo con SideQuest o con `adb install Nebular_VR_3D.apk` (las Quest deben estar en modo desarrollador).
 3. Ábrelo desde **Biblioteca → Orígenes desconocidos**.
 
 Todas las versiones van firmadas con la misma clave, así que las nuevas se instalan encima sin perder nada.
+
+> ℹ️ Desde el cambio de nombre a **Nebular VR 3D**, el paquete es `app.nebular.vr3d`. Si tenías instalada la versión
+> antigua (`app.smarttube.vr3d`), la nueva aparece como una app aparte; puedes desinstalar la vieja.
 
 ## Tus propias fotos 360°
 
@@ -61,10 +64,10 @@ Copia fotos **equirectangulares** (proporción 2:1, en JPG, PNG o WebP) a esta c
 (con SideQuest o con `adb push`):
 
 ```
-/sdcard/Android/data/app.smarttube.vr3d/files/panoramas/
+/sdcard/Android/data/app.nebular.vr3d/files/panoramas/
 ```
 
-Por ejemplo: `adb push mi_foto.jpg /sdcard/Android/data/app.smarttube.vr3d/files/panoramas/`
+Por ejemplo: `adb push mi_foto.jpg /sdcard/Android/data/app.nebular.vr3d/files/panoramas/`
 
 Al abrir la app, cada foto aparece en la lista como **360° nombre-del-archivo**. Si la foto mide más de
 4096 px de ancho, se reduce al cargarla para no gastar demasiada memoria.
@@ -74,7 +77,7 @@ Al abrir la app, cada foto aparece en la lista como **360° nombre-del-archivo**
 ## Descargar los mundos (página web)
 
 Los mundos se pueden descargar como modelos 3D **GLB** (glTF), junto con las fotos 360°, desde
-**https://pilahito.github.io/SmartTube-VR-3D/**. Cada uno trae una vista previa 3D que se puede girar.
+**https://pilahito.github.io/Nebular-VR-3D/**. Cada uno trae una vista previa 3D que se puede girar.
 
 - La página se monta sola con `.github/workflows/pages.yml` en cada cambio de `main`. Exporta los mundos con
   el mismo código que la app (`tools/export_worlds.gd`), así que siempre coinciden con la última versión.

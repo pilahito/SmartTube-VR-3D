@@ -8,7 +8,7 @@ const PANORAMA_DIR := "res://worlds/panoramas/"
 ## Carpetas donde el usuario puede dejar sus propias fotos 360° (equirectangulares 2:1).
 const USER_PANORAMA_DIRS := [
 	"user://panoramas",
-	"/storage/emulated/0/Android/data/app.smarttube.vr3d/files/panoramas",
+	"/storage/emulated/0/Android/data/app.nebular.vr3d/files/panoramas",
 ]
 const IMAGE_EXTENSIONS := ["jpg", "jpeg", "png", "webp"]
 const MAX_PANORAMA_WIDTH := 4096
