@@ -117,6 +117,10 @@ func _build_rig() -> void:
 	camera.far = 1000.0 # el planeta del mundo Espacio está a ~300 m con anillos de 190 m
 	origin.add_child(camera)
 	player_body = load(XRT + "player/player_body.tscn").instantiate()
+	# OpenXR ya da la altura real: calibrar deja los pies unos 0,6 m bajo el origen,
+	# dentro de la arena (mismo problema y misma solución que en NebularVR).
+	player_body.set("player_calibrate_height", false)
+	player_body.set("player_height_offset", 0.0)
 	origin.add_child(player_body)
 
 	for hand in ["left_hand", "right_hand"]:
