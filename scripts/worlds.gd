@@ -1,17 +1,11 @@
-## Catálogo de mundos. Cada mundo se construye por código dentro de un nodo contenedor,
-## con su cielo, luces, suelo (capa 1, para el teletransporte), decorado y sonido.
-## Al cambiar de mundo, main.gd borra el contenedor entero y construye el siguiente.
+## Mundos extra de NebulaVR (atardecer, noche, cine, salón, espacio y fotos 360° incluidas).
+## Cada mundo se construye por código dentro de un nodo contenedor, con su cielo, luces,
+## suelo (capa 1, para el teletransporte), decorado y sonido. main.gd borra el contenedor
+## al cambiar de mundo. Las fotos 360° del usuario las gestiona PanoramaLibrary.
 class_name Worlds
 extends RefCounted
 
 const PANORAMA_DIR := "res://worlds/panoramas/"
-## Carpetas donde el usuario puede dejar sus propias fotos 360° (equirectangulares 2:1).
-const USER_PANORAMA_DIRS := [
-	"user://panoramas",
-	"/storage/emulated/0/Android/data/app.nebular.vr3d/files/panoramas",
-]
-const IMAGE_EXTENSIONS := ["jpg", "jpeg", "png", "webp"]
-const MAX_PANORAMA_WIDTH := 4096
 
 const BUILTIN := [
 	{"id": "playa_dia", "name": "Playa (día)"},
@@ -23,24 +17,6 @@ const BUILTIN := [
 	{"id": "pano:res://worlds/panoramas/aurora_boreal.jpg", "name": "360° Aurora boreal"},
 	{"id": "pano:res://worlds/panoramas/nebulosa.jpg", "name": "360° Nebulosa"},
 ]
-
-
-## Lista de mundos: los incluidos + una entrada por cada foto 360° del usuario.
-static func catalog() -> Array:
-	var list := BUILTIN.duplicate(true)
-	for dir_path: String in USER_PANORAMA_DIRS:
-		if dir_path.begins_with("/storage/") and OS.get_name() != "Android":
-			continue
-		DirAccess.make_dir_recursive_absolute(dir_path)
-		var dir := DirAccess.open(dir_path)
-		if dir == null:
-			continue
-		var files := Array(dir.get_files())
-		files.sort()
-		for f: String in files:
-			if f.get_extension().to_lower() in IMAGE_EXTENSIONS:
-				list.append({"id": "pano:" + dir_path.path_join(f), "name": "360° " + f.get_basename()})
-	return list
 
 
 ## Construye el mundo `id` dentro de `parent`. Devuelve los ajustes de la pantalla y
@@ -221,7 +197,7 @@ static func _build_living_room(parent: Node3D) -> Dictionary:
 	_add_environment(parent, env)
 
 	const W := 16.0   # x de -8 a 8
-	const Z0 := -10.0 # pared de delante
+	const Z0 := -18.0 # pared de delante (cabe el asiento panorámico, pantalla a 16 m)
 	const Z1 := 6.0   # pared de atrás
 	const H := 4.2
 	var cx := 0.0
@@ -241,7 +217,7 @@ static func _build_living_room(parent: Node3D) -> Dictionary:
 	_box(parent, Vector3(0.2, H, 2.0), Vector3(-8.0, H * 0.5, Z0 + 1.0), wall)
 	_box(parent, Vector3(0.2, H, 2.0), Vector3(-8.0, H * 0.5, Z1 - 1.0), wall)
 	var frame := _mat(Color(0.12, 0.12, 0.13), 0.5)
-	for i in 6:
+	for i in int((Z1 - Z0 - 4.0) / 2.4) + 1:
 		_box(parent, Vector3(0.25, H - 1.4, 0.08), Vector3(-8.0, 0.8 + (H - 1.4) * 0.5, Z0 + 2.0 + i * 2.4), frame)
 
 	# Alfombra, sofá, mesa baja, estantería, plantas y lámpara
@@ -267,7 +243,7 @@ static func _build_living_room(parent: Node3D) -> Dictionary:
 			var h := rng.randf_range(0.25, 0.38)
 			_box(parent, Vector3(0.28, h, t), Vector3(7.7, 0.42 + shelf * 0.6 + h * 0.5, z), _mat(book_colors[rng.randi() % 4], 0.8))
 			z += t + 0.01
-	for p in [Vector3(-6.8, 0, 4.5), Vector3(6.8, 0, 4.5), Vector3(-6.8, 0, -8.8)]:
+	for p in [Vector3(-6.8, 0, 4.5), Vector3(6.8, 0, 4.5), Vector3(-6.8, 0, -16.8), Vector3(6.8, 0, -16.8)]:
 		_add_plant(parent, p)
 	_add_floor_lamp(parent, Vector3(2.4, 0, 1.6))
 	var ceiling := OmniLight3D.new()
@@ -451,17 +427,7 @@ static func _build_panorama(parent: Node3D, path: String) -> Dictionary:
 
 
 static func _load_panorama(path: String) -> Texture2D:
-	if path.begins_with("res://"):
-		return load(path)
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		push_warning("No se pudo cargar la foto 360°: " + path)
-		var fallback := Image.create(2, 1, false, Image.FORMAT_RGB8)
-		fallback.fill(Color(0.1, 0.1, 0.12))
-		return ImageTexture.create_from_image(fallback)
-	if img.get_width() > MAX_PANORAMA_WIDTH:
-		img.resize(MAX_PANORAMA_WIDTH, MAX_PANORAMA_WIDTH / 2, Image.INTERPOLATE_BILINEAR)
-	return ImageTexture.create_from_image(img)
+	return load(path)
 
 
 # ---------------------------------------------------------------- utilidades

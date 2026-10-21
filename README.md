@@ -1,125 +1,87 @@
-# Nebular VR 3D 🏝️
+# NebulaVR 0.3.0 - proyecto unificado Godot
 
-Una playa **en 3D de verdad** para las Meta Quest, con una pantalla de cine gigante delante de ti.
-No es una foto de fondo: hay mar con olas que se mueven, arena por la que puedes caminar
-(teletransporte), palmeras, sol, y sonido del mar y del viento a tu alrededor.
+Continuacion de pilahito/SmartTube-VR-3D para Meta Quest con Godot 4.7.2.
 
-Es la **fase 1** del salto de [SmartTube VR](https://github.com/pilahito/SmartTube-VR) a mundos inmersivos,
-hecha con **Godot 4.7.2** y OpenXR.
+## Implementado
+- Inicio con launcher en el mundo 3D.
+- Playa y bosque nocturno procedural con 128 luciernagas animadas.
+- Cambio de mundo conservando el reproductor de video.
+- Tres distancias de vision: 6, 10 y 16 metros.
+- Panel ampliado y control del cine con mandos.
+- Solicitud de 120 Hz si el runtime lo ofrece; no garantiza rendimiento a 120 FPS.
+- Video de prueba incluido; volumen inicial reducido.
+- Selector de apps Android, accesos guardados, paginas y eliminacion de accesos.
+- Boton SmartTube VR: abre su paquete instalado mediante Android.
+- Modo ECO (resolucion 3D al 75 %), pantalla curva/plana y pausa al perder actividad.
+- Setas luminosas con shader animado y dibujado por instancias.
 
-> ⚠️ Versión de prueba. Se compila y se firma automáticamente en GitHub, pero todavía no se ha probado en unas Quest reales.
+## Probar
+Abre project.godot con Godot. Para el simulador de TITAN usa probar-silencioso.bat: selecciona salida de audio Dummy, sin cambiar el volumen del PC ni el runtime global de OpenXR.
+Para ver la escena en escritorio usa abrir-NebulaVR-sin-sonido.bat. Teclas: 1 cine, 2 mundo, 3 inicio, espacio pausa, flechas salto, F curva/plana. Los botones 3D se manejan con el laser de los mandos en XR.
 
-## Qué trae
+## Validacion
+Pruebas headless en Godot 4.7.2 completadas: launcher, cine, ida y vuelta entre mundos, identidad del reproductor y tres asientos. Prueba adicional de accesos: escritorio sin Android, duplicados, persistencia y datos invalidos.
 
-- **Playa inmersiva**: océano animado (olas Gerstner y espuma en la orilla), arena con dunas y zona mojada,
-  cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
-- **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
-- **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
-- **Panel de control** que se maneja con el rayo láser de los mandos.
-- **8 mundos para elegir** desde el panel (la app recuerda el último que usaste):
+El runtime de Meta XR Simulator 207.1 se carga, pero su frontend no conecta en este entorno. La interaccion y el rendimiento en visor no estan validados. La exportacion Android se intento y se detuvo por las rutas del SDK/Java que esta ejecucion de Godot no puede resolver; no se incluye una APK.
 
-| Mundo | Qué es |
+## Pendiente
+YouTube real integrado en la textura 3D, SponsorBlock y DeArrow conectados a ese reproductor, iconos nativos en los accesos, transiciones visuales, otros cuatro mundos y pruebas de rendimiento en visor. El boton navegador abre una URL con el navegador predeterminado; no incrusta Brave. El selector de apps esta implementado mediante JavaClassWrapper y AndroidRuntime, pero solo se ha validado su comportamiento fuera de Android: falta ejecutarlo en unas Quest.
+
+## Alcance de la unificacion
+NebulaVR incorpora y continua el proyecto Godot SmartTube-VR-3D en una unica escena principal y un unico proyecto. SmartTube-VR es una app Android 2D distinta: abrirla desde NebulaVR no equivale a integrar su motor en la pantalla 3D. No se incluye su APK ni se afirma una fusion binaria completa.
+
+Para descubrir apps Android se incluye addons/nebula_apps/nebula-visibility.aar, una biblioteca sin codigo que aporta declaraciones queries al manifiesto al exportar con Gradle. Puede regenerarse con tools/build_visibility_aar.ps1. No solicita QUERY_ALL_PACKAGES.
+
+Referencias revisadas: https://github.com/pilahito/SmartTube-VR-3D y https://github.com/pilahito/SmartTube-VR (launcher y modelo HomeTiles). Se mantienen las licencias de la base y de XR Tools.
+
+El identificador Android original se conserva. Actualizar una APK existente requiere tambien mantener su firma. El repositorio remoto aun no esta renombrado; estos cambios se proponen en la rama codex/nebulavr-unified-launcher.
+
+### Mandos y manos visibles
+
+- Joystick derecho: navegar por los botones mientras el panel está abierto. El giro se desactiva durante la navegación.
+- A derecho: aceptar el botón seleccionado; con panel oculto, pausar/reanudar.
+- B derecho: mostrar u ocultar y centrar el panel.
+- Menú izquierdo: volver al inicio y recuperar el panel.
+- Pulsar joystick derecho: recentrar.
+- Las manos ligeras de XR Tools se animan con gatillo y agarre del mando. No representan seguimiento óptico individual de los dedos.
+
+Estas rutas se comprueban automáticamente en escritorio; falta validarlas físicamente en Quest. El control de volumen permite silencio completo.
+
+### Entornos de esta versión
+
+El selector «Elegir entorno» permite acceder directamente a Playa, Bosque de Hadas, Observatorio Astral, Invernadero Abisal, Expreso Fantasma y Biblioteca de Mercurio. Los cuatro últimos son prototipos geométricos monocromos con materiales compartidos. La cámara permanece estable; el observatorio gira lentamente y las medusas y estanterías flotan. El cambio conserva la instancia del reproductor.
+
+No incluye aún reproducción de SmartTube dentro de la pantalla 3D: el acceso abre la aplicación externa. Rendimiento, seguimiento óptico de manos y comodidad pendientes de validación en Quest.
+
+### Más entornos (páginas 2 y 3 del selector)
+
+El selector «Elige tu entorno» tiene ahora 13 entornos en páginas de seis (**Anterior / Siguiente**):
+
+| Entorno | Qué es |
 |---|---|
-| Playa (día) | La playa original. |
-| Playa (atardecer) | Sol bajo sobre el mar, cielo naranja y agua con reflejos cálidos. |
-| Playa (noche) | Cielo estrellado, luna, mar oscuro y una hoguera que parpadea. |
-| Sala de cine | Sala grande con butacas rojas, telones, apliques en las paredes y luz que sale de la pantalla. |
-| Salón | Salón con tarima de madera, sofá, estantería con libros, plantas, lámpara y ventanal al atardecer. |
-| Espacio | Plataforma flotante con borde de luz, un planeta gigante con anillos, una luna y una nebulosa de fondo. |
-| 360° Aurora boreal | Foto 360° de una aurora sobre un lago helado. |
-| 360° Nebulosa | Foto 360° del espacio profundo. |
+| Playa al atardecer | Sol bajo sobre el mar, cielo naranja y agua con reflejos cálidos. |
+| Playa de noche | Cielo estrellado, luna, mar oscuro y una hoguera que parpadea. |
+| Sala de cine | Sala grande con butacas rojas, telones, apliques y luz que sale de la pantalla. |
+| Salón | Tarima de madera, sofá, estantería con libros, plantas, lámpara y ventanal al atardecer. |
+| Espacio | Plataforma flotante con borde de luz, planeta gigante con anillos, una luna y nebulosa de fondo. |
+| Aurora boreal 360° | Foto 360° incluida: aurora sobre un lago helado. |
+| Nebulosa 360° | Foto 360° incluida: espacio profundo. |
 
-  Todos los mundos están hechos por código o generados para este proyecto. No se usa ningún recurso de
-  otras apps de VR.
-- **Tus propias fotos 360°**: aparecen como mundos nuevos (ver más abajo).
-
-## Controles
-
-| Acción | Cómo |
-|---|---|
-| Pulsar botones del panel | Apunta con el láser (cualquier mando) y aprieta el **gatillo** |
-| Reproducir / pausa, ±10 s, volumen | Botones y barra del panel |
-| Acercar / alejar, agrandar / achicar la pantalla | Botones del panel |
-| Cambiar de mundo | Botones **◀ Mundo** y **Mundo ▶** del panel |
-| Centrar la vista | Botón **Centrar** |
-| Mostrar / ocultar el panel | Botón **B** (mando derecho) |
-| Girar | **Joystick derecho** izquierda/derecha (giro por pasos de 30°) |
-| Moverte por la arena | Mantén el **grip** del mando izquierdo, apunta y suelta (teletransporte) |
-| Salir | Botón **Salir** |
-
-## Instalar en las Quest
-
-1. Descarga el APK `Nebular_VR_3D.apk` (en *Actions* → último build → artefacto `Nebular_VR_3D-apk`, o en *Releases* cuando se publique).
-2. Instálalo con SideQuest o con `adb install Nebular_VR_3D.apk` (las Quest deben estar en modo desarrollador).
-3. Ábrelo desde **Biblioteca → Orígenes desconocidos**.
-
-Todas las versiones van firmadas con la misma clave, así que las nuevas se instalan encima sin perder nada.
-
-> ℹ️ Desde el cambio de nombre a **Nebular VR 3D**, el paquete es `app.nebular.vr3d`. Si tenías instalada la versión
-> antigua (`app.smarttube.vr3d`), la nueva aparece como una app aparte; puedes desinstalar la vieja.
-
-## Tus propias fotos 360°
-
-Copia fotos **equirectangulares** (proporción 2:1, en JPG, PNG o WebP) a esta carpeta de las Quest
-(con SideQuest o con `adb push`):
-
-```
-/sdcard/Android/data/app.nebular.vr3d/files/panoramas/
-```
-
-Por ejemplo: `adb push mi_foto.jpg /sdcard/Android/data/app.nebular.vr3d/files/panoramas/`
-
-Al abrir la app, cada foto aparece en la lista como **360° nombre-del-archivo**. Si la foto mide más de
-4096 px de ancho, se reduce al cargarla para no gastar demasiada memoria.
-
-> ⚠️ Esta ruta todavía no se ha probado en unas Quest reales. Si no aparecen tus fotos, avisa.
+Se construyen por código en `scripts/worlds.gd`. Las dos fotos 360° y el zumbido del espacio se generan con
+`tools/generate_assets.py` (dominio público, CC0). Al entrar en uno de estos entornos vuelves al punto de partida,
+porque la sala de cine y el salón tienen paredes. La sala y el salón caben con el asiento panorámico (pantalla a 16 m).
 
 ## Descargar los mundos (página web)
 
-Los mundos se pueden descargar como modelos 3D **GLB** (glTF), junto con las fotos 360°, desde
-**https://pilahito.github.io/Nebular-VR-3D/**. Cada uno trae una vista previa 3D que se puede girar.
+Los entornos 3D se pueden descargar como modelos **GLB** (glTF), junto con las fotos 360°, desde la página de
+GitHub Pages del repositorio. Cada uno trae una vista previa 3D que se puede girar.
 
-- La página se monta sola con `.github/workflows/pages.yml` en cada cambio de `main`. Exporta los mundos con
-  el mismo código que la app (`tools/export_worlds.gd`), así que siempre coinciden con la última versión.
+- `.github/workflows/pages.yml` la monta en cada cambio de `main`, con el mismo código que la app
+  (`tools/export_worlds.gd`), así que siempre coincide con la última versión.
 - Primera vez: en GitHub, **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-- Para montarla en tu PC: `GODOT=/ruta/a/godot tools/build_site.sh` (queda en `build/site/`).
-- glTF no admite shaders, así que el agua, la arena, la tarima y el planeta salen con colores lisos.
+- En tu PC: `GODOT=/ruta/a/godot tools/build_site.sh` (queda en `build/site/`).
+- glTF no admite shaders: el agua, la arena, la tarima y el planeta salen con colores lisos.
 
-## Abrir el proyecto en tu PC
+## Moon y panoramas 360°
 
-Abre la carpeta con **Godot 4.7.2-stable** (*Importar* → `project.godot`). Para exportar a Quest necesitas
-las plantillas de exportación de Android de la 4.7.2, el Android SDK (plataforma 36, build-tools 36.1.0) y JDK 17.
-
-## Rendimiento (objetivo 72–90 fps en Quest 2/3)
-
-- Renderizador **Mobile** (Vulkan), MSAA 2×.
-- **Foveación** fija nivel alto + dinámica (OpenXR).
-- Pide 90 Hz si el visor lo permite; si no, 72 Hz.
-- Todo procedural y con pocos polígonos: sin texturas pesadas, una sola luz con sombras cortas (30 m), océano opaco.
-
-## Vídeo: cómo funciona en la fase 1
-
-En esta fase el vídeo es un **clip OGV (Theora) incluido en la app** que se reproduce con `VideoStreamPlayer`
-dentro de un `SubViewport`, proyectado en la pantalla curva. Es lo más seguro para empezar, pero la calidad
-es limitada (854×480).
-
-En la fase 2 se cambiará por una **capa de composición OpenXR con superficie Android** (`OpenXRCompositionLayer`
-+ `use_android_surface`) alimentada por ExoPlayer desde un plugin Kotlin: calidad nativa y vídeos de YouTube reales.
-
-## Plan (fase 2)
-
-- Reproducción real de YouTube (extractor de SmartTube / NewPipeExtractor) en la superficie Android nativa.
-- Búsqueda y navegación de vídeos en un panel 3D.
-- SponsorBlock y DeArrow, como en SmartTube VR.
-- Más mundos: bosque mágico.
-- Seguimiento de manos.
-
-## Créditos y licencias
-
-- Código de este proyecto: **MIT** (ver `LICENSE`).
-- [Godot Engine](https://godotengine.org) — MIT.
-- [Godot OpenXR Vendors](https://github.com/GodotVR/godot_openxr_vendors) 5.1.0 — MIT (incluye el OpenXR loader de Meta con su licencia en `addons/godotopenxrvendors/meta/`).
-- [Godot XR Tools](https://github.com/GodotVR/godot-xr-tools) 4.5.2 — MIT.
-- Vídeo de prueba: fragmento de **Big Buck Bunny** © Blender Foundation, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — peach.blender.org.
-- Sonidos de olas, viento y del espacio: generados por código para este proyecto, dominio público (CC0).
-- Panoramas 360° (aurora boreal y nebulosa): generados por código con `tools/generate_assets.py`, dominio público (CC0).
+El selector de entornos permite abrir el catálogo oficial de Moon y cargar panoramas locales PNG/JPEG con el vídeo activo. [Uso, formatos y límites](docs/MOON_ENVIRONMENTS_ES.md). Incluye selector nativo de archivos cuando el sistema lo ofrece, pendiente de validar en Quest; los hogares 3D de Moon no se importan.
