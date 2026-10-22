@@ -17,6 +17,12 @@ hecha con **Godot 4.7.2** y OpenXR.
 - **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
 - **Panel de control** de cristal oscuro que se maneja con el rayo láser de los mandos: barra de progreso para saltar a cualquier punto, iconos de reproducción y sliders de volumen, tamaño y distancia de la pantalla. Su diseño se basa en los mockups de [SmartTube VR](https://github.com/pilahito/SmartTube-VR/tree/main/docs/interfaz).
 
+| Reproductor | Pantalla virtual |
+|---|---|
+| ![Mockup del reproductor](docs/interfaz/reproductor.jpg) | ![Mockup de los ajustes de pantalla](docs/interfaz/pantalla-ajustes.jpg) |
+
+<sub>*Mockups de referencia del diseño (de [SmartTube VR](https://github.com/pilahito/SmartTube-VR)), no capturas de esta app.*</sub>
+
 ## Controles
 
 | Acción | Cómo |
