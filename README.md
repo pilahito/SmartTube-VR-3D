@@ -11,6 +11,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 ## Qué trae
 
+- **Pantalla de inicio** (**☰ → Inicio**): barra lateral (Inicio, Escenarios, Pantalla, Centrar vista, Salir), la tarjeta del vídeo con su fotograma en vivo, escenarios sugeridos que se aplican con un clic y una barra rápida con playa, bosque, cyberpunk, espacio y salón. No hay datos de YouTube, así que en vez de vídeos recomendados enseña el clip local y escenarios.
 - **16 escenarios** (menú **☰ → Escenarios**): playa (normal, tropical, atardecer y de noche), bosque natural y mágico, montañas, espacio, ciudad cyberpunk y 7 salas (Retro Arcade, Gamer RGB, Cine clásico y cuatro salones). Cada uno tiene su cielo, luz, niebla, suelo y sonido; el último elegido se recuerda al volver a abrir la app. Excepto la playa, son entornos sencillos hechos por código que buscan parecerse en ambiente a los mockups, no réplicas.
 - **Playa inmersiva**: océano animado (olas Gerstner y espuma en la orilla), arena con dunas y zona mojada,
   cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
@@ -27,7 +28,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 <sub>*Mockups de referencia del diseño (de [SmartTube VR](https://github.com/pilahito/SmartTube-VR)), no capturas de esta app.*</sub>
 
-**Del mockup, lo que todavía no está** (necesita datos de YouTube o de la app Android, y esta fase solo reproduce un vídeo local): Wi-Fi y batería de la barra de estado (Godot 4.7 no tiene API para leerlos), likes, SponsorBlock, DeArrow, subtítulos, comentarios, descripción y el inicio con vídeos recomendados.
+**Del mockup, lo que todavía no está** (necesita datos de YouTube o de la app Android, y esta fase solo reproduce un vídeo local): Wi-Fi y batería de la barra de estado (Godot 4.7 no tiene API para leerlos), likes, SponsorBlock, DeArrow, subtítulos, comentarios, descripción, el buscador y los vídeos recomendados reales del inicio.
 
 ## Controles
 
@@ -40,6 +41,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 | Volumen | Slider junto al icono del altavoz |
 | Ajustes de pantalla | Botón **⚙**: abre el panel «Pantalla virtual» a tu derecha |
 | Pantalla grande / volver | Botón de **pantalla completa** (esquinas) |
+| Abrir el inicio | **☰** → **Inicio** |
 | Cambiar de escenario | **☰** → **Escenarios** y pulsa una casilla |
 | Centrar la vista | **☰** → **Centrar vista** |
 | Mostrar / ocultar todos los paneles | Botón **B** (mando derecho) |

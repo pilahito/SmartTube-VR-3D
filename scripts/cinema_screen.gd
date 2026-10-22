@@ -99,6 +99,10 @@ func _make_material(code: String) -> ShaderMaterial:
 	return m
 
 
+func video_texture() -> Texture2D:
+	return _viewport.get_texture()
+
+
 func video_info() -> String:
 	return "%dp" % _video_size.y
 

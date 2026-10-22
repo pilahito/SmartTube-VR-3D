@@ -90,6 +90,10 @@ func _icon(k: String, c: Vector2, s: float) -> void:
 			draw_polyline(bottom, col, 3.5, true)
 			draw_line(top[0], bottom[0], col, 3.5, true)
 			draw_line(top[12], bottom[12], col, 3.5, true)
+		"home":
+			draw_polyline(PackedVector2Array([c + Vector2(-s * 1.2, -s * 0.1), c + Vector2(0, -s * 1.15), c + Vector2(s * 1.2, -s * 0.1)]), col, 3.5, true)
+			draw_polyline(PackedVector2Array([c + Vector2(-s * 0.85, -s * 0.2), c + Vector2(-s * 0.85, s), c + Vector2(s * 0.85, s), c + Vector2(s * 0.85, -s * 0.2)]), col, 3.5, true)
+			draw_rect(Rect2(c + Vector2(-s * 0.25, s * 0.25), Vector2(s * 0.5, s * 0.75)), col, false, 3.0)
 		"scenes":
 			for sx in [-1.0, 0.0]:
 				for sy in [-1.0, 0.0]:

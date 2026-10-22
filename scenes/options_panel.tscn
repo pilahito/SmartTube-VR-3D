@@ -6,5 +6,5 @@
 layout_mode = 3
 anchors_preset = 0
 offset_right = 470.0
-offset_bottom = 515.0
+offset_bottom = 590.0
 script = ExtResource("1")

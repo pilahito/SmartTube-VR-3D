@@ -17,6 +17,8 @@ var settings_ui: Control
 var scenarios: Scenarios
 var scenarios_panel: Node3D
 var scenarios_ui: Control
+var home_panel: Node3D
+var home_ui: Control
 var beach_root: Node3D
 var _ocean_players: Array[AudioStreamPlayer3D] = []
 var _wind: AudioStreamPlayer
@@ -168,6 +170,7 @@ func _place_screen() -> void:
 	_face_user(options_panel, head, basis, Vector3(0.7, 0.2, -1.2))
 	_face_user(settings_panel, head, basis, Vector3(0.78, -0.05, -1.15))
 	_face_user(scenarios_panel, head, basis, Vector3(0, 0.05, -1.2))
+	_face_user(home_panel, head, basis, Vector3(0, 0.05, -1.3))
 
 
 func _face_user(node: Node3D, head: Vector3, basis: Basis, offset: Vector3) -> void:
@@ -220,8 +223,15 @@ func _build_panel() -> void:
 	if scenarios_ui:
 		scenarios_ui.chosen.connect(_on_scenario_chosen)
 		scenarios_ui.closed.connect(func(): _show_scenarios(false))
+	home_panel = _make_panel("PanelInicio", "res://scenes/home_panel.tscn", Vector2(1220, 650), PX)
+	home_ui = home_panel.get_scene_instance()
+	if home_ui:
+		home_ui.action.connect(_on_action)
+		home_ui.scenario_chosen.connect(_on_scenario_chosen)
+		home_ui.set_video(screen.video_texture())
 	_show_side("")
 	_show_scenarios(false)
+	_show_home(false)
 	_place_screen()
 
 
@@ -243,6 +253,8 @@ func _show_side(which: String) -> void:
 	if which != "" and scenarios_panel:
 		scenarios_panel.visible = false
 		scenarios_panel.set("enabled", false)
+		home_panel.visible = false
+		home_panel.set("enabled", false)
 	for pair in [[options_panel, "options"], [settings_panel, "settings"]]:
 		var on: bool = pair[1] == which
 		pair[0].visible = on
@@ -254,7 +266,16 @@ func _show_scenarios(on: bool) -> void:
 	scenarios_panel.set("enabled", on)
 	if on:
 		_show_side("")
+		_show_home(false)
 		scenarios_ui.set_current(scenarios.current)
+
+
+func _show_home(on: bool) -> void:
+	home_panel.visible = on
+	home_panel.set("enabled", on)
+	if on:
+		_show_side("")
+		_show_scenarios(false)
 
 
 func _on_scenario_chosen(id: String) -> void:
@@ -275,6 +296,8 @@ func _on_scenario_applied(def: Dictionary) -> void:
 		ui.set_scene_name(def["name"])
 	if scenarios_ui:
 		scenarios_ui.set_current(def["id"])
+	if home_ui:
+		home_ui.set_current(def)
 	if origin == null:
 		return
 	# La arena queda a ~0,4 m sobre el suelo de los demás escenarios: sin subir al jugador cae a través de ella.
@@ -319,7 +342,10 @@ func _on_action(act: String) -> void:
 		"toggle_settings": _show_side("" if settings_panel.visible else "settings")
 		"video_settings": _show_side("settings")
 		"scenarios": _show_scenarios(true)
-		"close": _show_side("")
+		"home": _show_home(true)
+		"close":
+			_show_side("")
+			_show_home(false)
 		"fullscreen":
 			screen.toggle_fullscreen()
 			screen.rebuild()
@@ -345,6 +371,7 @@ func _on_right_button(name: String) -> void:
 		if not panel.visible:
 			_show_side("")
 			_show_scenarios(false)
+			_show_home(false)
 		else:
 			_place_screen()
 
@@ -354,4 +381,6 @@ func _process(_d: float) -> void:
 		ui.set_status(screen.is_playing_now(), screen.player.stream_position, screen.player.get_stream_length())
 		var fmt := screen.format if CinemaScreen.FORMATS.has(screen.format) else "%.2f:1" % screen.get_aspect()
 		ui.set_info(screen.video_info(), "OGV")
+		if home_ui:
+			home_ui.set_duration(screen.player.get_stream_length())
 		options_ui.set_info("%s • %s • OGV" % [screen.video_info(), fmt])

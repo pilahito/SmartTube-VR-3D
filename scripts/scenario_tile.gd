@@ -4,6 +4,7 @@ extends Button
 
 var def := {}
 var chosen := false: set = _set_chosen
+var show_name := true
 
 
 func _set_chosen(v: bool) -> void:
@@ -15,9 +16,10 @@ func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
 	var inner := Rect2(Vector2(3, 3), size - Vector2(6, 6))
 	_thumb(inner)
-	draw_rect(Rect2(inner.position.x, inner.end.y - 38, inner.size.x, 38), Color(0, 0, 0, 0.5))
-	draw_string(ThemeDB.fallback_font, Vector2(inner.position.x, inner.end.y - 11), def.get("name", ""),
-		HORIZONTAL_ALIGNMENT_CENTER, inner.size.x, 22, Color.WHITE)
+	if show_name:
+		draw_rect(Rect2(inner.position.x, inner.end.y - 38, inner.size.x, 38), Color(0, 0, 0, 0.5))
+		draw_string(ThemeDB.fallback_font, Vector2(inner.position.x, inner.end.y - 11), def.get("name", ""),
+			HORIZONTAL_ALIGNMENT_CENTER, inner.size.x, 22, Color.WHITE)
 	var lit := chosen or is_hovered()
 	var sb := StyleBoxFlat.new()
 	sb.draw_center = false
