@@ -15,7 +15,8 @@ hecha con **Godot 4.7.2** y OpenXR.
   cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
 - **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
 - **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
-- **Barra de reproducción** de cristal oscuro: reproducir/pausa, ±10 s, barra de progreso en la que puedes pulsar para saltar, volumen, **Deshacer salto** (5 s después de cada salto) y la resolución del vídeo.
+- **Barra de reproducción** de cristal oscuro: reproducir/pausa, ±10 s, barra de progreso en la que puedes pulsar para saltar, volumen, **Deshacer salto** (5 s después de cada salto), resolución y códec del vídeo.
+- **Píldora de estado** arriba a la izquierda (dispositivo y Hz) con el botón **☰**, que abre el panel **Reproductor VR**: *Ajustes de video*, *Centrar vista* y *Salir de la app*.
 - **Panel «Pantalla virtual»** (botón ⚙): pantalla curva o plana, curvatura, formato (21:9, 16:9, 32:9, 4:3 o «Ajustar» al vídeo), tamaño en pulgadas, distancia, altura e inclinación, los preajustes *Cine*, *Tumbado (techo)* y *Escritorio*, **3D lado a lado** y proyección **180°/360°**.
 - Su diseño se basa en los mockups de [SmartTube VR](https://github.com/pilahito/SmartTube-VR/tree/main/docs/interfaz).
 
@@ -38,11 +39,11 @@ hecha con **Godot 4.7.2** y OpenXR.
 | Volumen | Slider junto al icono del altavoz |
 | Ajustes de pantalla | Botón **⚙**: abre el panel «Pantalla virtual» a tu derecha |
 | Pantalla grande / volver | Botón de **pantalla completa** (esquinas) |
-| Centrar la vista | Botón **Centrar** |
-| Mostrar / ocultar el panel | Botón **B** (mando derecho) |
+| Centrar la vista | **☰** → **Centrar vista** |
+| Mostrar / ocultar todos los paneles | Botón **B** (mando derecho) |
 | Girar | **Joystick derecho** izquierda/derecha (giro por pasos de 30°) |
 | Moverte por la arena | Mantén el **grip** del mando izquierdo, apunta y suelta (teletransporte) |
-| Salir | Botón **Salir** |
+| Salir | **☰** → **Salir de la app** |
 
 ## Instalar en las Quest
 

@@ -17,47 +17,39 @@ var _proj_btn: Button
 
 
 func _ready() -> void:
-	size = Vector2(480, 800)
+	size = Vector2(520, 730)
 	var bg := PanelContainer.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.add_theme_stylebox_override("panel", UIKit.glass(28, 26, 22))
+	bg.add_theme_stylebox_override("panel", UIKit.glass(26, 24, 22))
 	add_child(bg)
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 8)
+	col.add_theme_constant_override("separation", 4)
 	bg.add_child(col)
 
-	var head := HBoxContainer.new()
-	col.add_child(head)
-	var title := UIKit.label("Pantalla virtual", 36)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(title)
-	var close := IconBtn.new()
-	close.kind = "close"
-	close.custom_minimum_size = Vector2(56, 56)
-	UIKit.style_button(close)
-	close.pressed.connect(func(): setting.emit("close", true))
-	head.add_child(close)
+	col.add_child(UIKit.label("Pantalla virtual", 38))
 
 	var shape := HBoxContainer.new()
-	shape.add_theme_constant_override("separation", 10)
+	shape.add_theme_constant_override("separation", 14)
 	col.add_child(shape)
 	var shape_group := ButtonGroup.new()
-	_curved_btn = _toggle("Curva", Vector2(0, 56), 26, shape_group)
+	_curved_btn = _shape_button("Curva", "screen_curved", shape_group)
 	_curved_btn.pressed.connect(func(): setting.emit("curved", true))
-	_flat_btn = _toggle("Plana", Vector2(0, 56), 26, shape_group)
+	_flat_btn = _shape_button("Plana", "screen_flat", shape_group)
 	_flat_btn.pressed.connect(func(): setting.emit("curved", false))
 	shape.add_child(_curved_btn)
 	shape.add_child(_flat_btn)
 
 	_add_slider(col, "curvature", "Curvatura", 0.2, 1.5, 0.05, 1.0)
 
-	col.add_child(UIKit.label("Formato", 26))
+	col.add_child(UIKit.label("Formato", 24))
 	var formats := HBoxContainer.new()
-	formats.add_theme_constant_override("separation", 8)
+	formats.add_theme_constant_override("separation", 6)
 	col.add_child(formats)
 	var fmt_group := ButtonGroup.new()
 	for f in FORMAT_NAMES:
-		var b := _toggle(f, Vector2(0, 48), 20, fmt_group, 4)
+		var wide: bool = f == "21:9"
+		var b := _toggle("21:9  Ultrapanorámica" if wide else f, Vector2(0, 48), 18, fmt_group, 8)
+		b.size_flags_stretch_ratio = 3.0 if wide else 1.0
 		b.pressed.connect(func(): setting.emit("format", f))
 		formats.add_child(b)
 		_format_btns[f] = b
@@ -68,25 +60,47 @@ func _ready() -> void:
 	_add_slider(col, "tilt_deg", "Inclinación", -30.0, 90.0, 1.0, 0.0)
 
 	var presets := HFlowContainer.new()
-	presets.add_theme_constant_override("h_separation", 8)
+	presets.add_theme_constant_override("h_separation", 10)
 	presets.add_theme_constant_override("v_separation", 8)
 	col.add_child(presets)
 	for p in PRESET_BUTTONS:
-		var b := UIKit.text_button(p[0], 22, Vector2(0, 48), 16)
+		var b := UIKit.text_button(p[0], 22, Vector2(0, 48), 14, 16)
 		b.pressed.connect(func(): setting.emit("preset", p[1]))
 		presets.add_child(b)
-	_sbs_btn = UIKit.text_button("3D lado a lado", 22, Vector2(0, 48), 16)
+	_sbs_btn = UIKit.text_button("3D lado a lado", 22, Vector2(0, 48), 14, 16)
 	_sbs_btn.toggle_mode = true
 	_sbs_btn.toggled.connect(func(on: bool): setting.emit("stereo_sbs", on))
 	presets.add_child(_sbs_btn)
-	_proj_btn = UIKit.text_button("360°/180°", 22, Vector2(0, 48), 16)
+	_proj_btn = UIKit.text_button("360°/180°", 22, Vector2(0, 48), 14, 16)
 	_proj_btn.toggle_mode = true
 	_proj_btn.pressed.connect(func(): setting.emit("projection_next", true))
 	presets.add_child(_proj_btn)
 
 
+func _shape_button(t: String, icon_kind: String, group: ButtonGroup) -> Button:
+	var b := IconBtn.new()
+	b.lead = icon_kind
+	b.text = t
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.add_theme_font_size_override("font_size", 28)
+	b.custom_minimum_size = Vector2(0, 62)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.toggle_mode = true
+	b.button_group = group
+	UIKit.style_button(b, 16, 78, 12)
+	# Seleccionado: realce azul suave con borde, como el resto de la maqueta (no relleno sólido).
+	var on := UIKit.box(Color(UIKit.ACCENT.r, UIKit.ACCENT.g, UIKit.ACCENT.b, 0.22), 16)
+	on.set_border_width_all(2)
+	on.border_color = UIKit.ACCENT
+	on.content_margin_left = 78
+	on.content_margin_right = 12
+	b.add_theme_stylebox_override("pressed", on)
+	b.add_theme_stylebox_override("hover_pressed", on)
+	return b
+
+
 func _toggle(t: String, min_size: Vector2, font_size: int, group: ButtonGroup, pad := 14) -> Button:
-	var b := UIKit.text_button(t, font_size, min_size, 16, pad)
+	var b := UIKit.text_button(t, font_size, min_size, 14, pad)
 	b.toggle_mode = true
 	b.button_group = group
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -96,12 +110,12 @@ func _toggle(t: String, min_size: Vector2, font_size: int, group: ButtonGroup, p
 func _add_slider(parent: Control, key: String, label_text: String, lo: float, hi: float, step: float, val: float) -> void:
 	var row := HBoxContainer.new()
 	parent.add_child(row)
-	var l := UIKit.label(label_text, 26)
+	var l := UIKit.label(label_text, 24)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(l)
-	var v := UIKit.label("", 24, Color(1, 1, 1, 0.8))
+	var v := UIKit.label("", 24)
 	row.add_child(v)
-	var s := UIKit.slider(lo, hi, step, val, UIKit.ACCENT, 30)
+	var s := UIKit.slider(lo, hi, step, val, UIKit.ACCENT, 28, 6, 24)
 	s.value_changed.connect(func(x: float):
 		_values[key].text = _fmt(key, x)
 		setting.emit(key, x))
@@ -111,12 +125,12 @@ func _add_slider(parent: Control, key: String, label_text: String, lo: float, hi
 	v.text = _fmt(key, val)
 
 
+## Solo Tamaño y Distancia muestran su valor, como en el mockup.
 func _fmt(key: String, v: float) -> String:
 	match key:
-		"curvature": return "%d%%" % roundi(v * 100.0)
 		"diagonal_inches": return "%d pulgadas" % roundi(v)
-		"tilt_deg": return "%d°" % roundi(v)
-		_: return "%.1f m" % v
+		"distance": return ("%d m" % roundi(v)) if is_equal_approx(v, roundf(v)) else ("%.1f m" % v)
+		_: return ""
 
 
 ## Refleja en los controles el estado actual de la pantalla (tras un preajuste, por ejemplo).

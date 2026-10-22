@@ -5,6 +5,6 @@
 [node name="UIPanel" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 1280.0
-offset_bottom = 290.0
+offset_right = 1240.0
+offset_bottom = 200.0
 script = ExtResource("1")
