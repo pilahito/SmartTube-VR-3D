@@ -797,7 +797,7 @@ func _room_cinema(d: Dictionary) -> void:
 func _room_lounge(d: Dictionary, window: Color, variant: String) -> void:
 	var fabric := _mat(d["accent"], false, 1.0, 0.95)
 	var wood := _mat(Color(0.3, 0.19, 0.1) if variant != "modern" else Color(0.75, 0.62, 0.45), false, 1.0, 0.7)
-	var rug_c := {"classic": Color(0.55, 0.25, 0.18), "night": Color(0.3, 0.1, 0.07), "modern": Color(0.9, 0.9, 0.88)}[variant]
+	var rug_c: Color = {"classic": Color(0.55, 0.25, 0.18), "night": Color(0.3, 0.1, 0.07), "modern": Color(0.9, 0.9, 0.88)}[variant]
 	_box(Vector3(9.0, 0.03, 6.0), Vector3(0, 0.02, 3.0), _mat(rug_c, false, 1.0, 1.0))
 	# sofa en L, mesa de centro y puf
 	_box(Vector3(4.2, 0.8, 1.3), Vector3(0, 0.4, 9.2), fabric)
