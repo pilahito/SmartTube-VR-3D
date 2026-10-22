@@ -15,15 +15,18 @@ hecha con **Godot 4.7.2** y OpenXR.
   cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
 - **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
 - **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
-- **Panel de control** que se maneja con el rayo láser de los mandos.
+- **Panel de control** de cristal oscuro que se maneja con el rayo láser de los mandos: barra de progreso para saltar a cualquier punto, iconos de reproducción y sliders de volumen, tamaño y distancia de la pantalla. Su diseño se basa en los mockups de [SmartTube VR](https://github.com/pilahito/SmartTube-VR/tree/main/docs/interfaz).
 
 ## Controles
 
 | Acción | Cómo |
 |---|---|
 | Pulsar botones del panel | Apunta con el láser (cualquier mando) y aprieta el **gatillo** |
-| Reproducir / pausa, ±10 s, volumen | Botones y barra del panel |
-| Acercar / alejar, agrandar / achicar la pantalla | Botones del panel |
+| Reproducir / pausa y ±10 s | Botones del panel |
+| Saltar a un punto del vídeo | Pulsa o arrastra la barra roja de progreso |
+| Volumen | Slider **Volumen** |
+| Agrandar / achicar la pantalla | Slider **Tamaño** |
+| Acercar / alejar la pantalla | Slider **Distancia** |
 | Centrar la vista | Botón **Centrar** |
 | Mostrar / ocultar el panel | Botón **B** (mando derecho) |
 | Girar | **Joystick derecho** izquierda/derecha (giro por pasos de 30°) |
