@@ -109,6 +109,7 @@ static func build_environment(parent: Node3D) -> DirectionalLight3D:
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 30.0
+	sun.set_meta("world_env", we)
 	parent.add_child(sun)
 	return sun
 

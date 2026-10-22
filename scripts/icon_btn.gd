@@ -90,6 +90,10 @@ func _icon(k: String, c: Vector2, s: float) -> void:
 			draw_polyline(bottom, col, 3.5, true)
 			draw_line(top[0], bottom[0], col, 3.5, true)
 			draw_line(top[12], bottom[12], col, 3.5, true)
+		"scenes":
+			for sx in [-1.0, 0.0]:
+				for sy in [-1.0, 0.0]:
+					draw_rect(Rect2(c + Vector2(sx, sy) * s * 1.05 + Vector2(s * 0.08, s * 0.08), Vector2(s * 0.9, s * 0.9)), col, false, 3.0)
 		"screen_flat":
 			draw_rect(Rect2(c + Vector2(-s * 1.1, -s * 0.8), Vector2(s * 2.2, s * 1.6)), col, false, 3.5)
 		"recenter":

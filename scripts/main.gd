@@ -14,12 +14,21 @@ var options_panel: Node3D
 var options_ui: Control
 var settings_panel: Node3D
 var settings_ui: Control
+var scenarios: Scenarios
+var scenarios_panel: Node3D
+var scenarios_ui: Control
+var beach_root: Node3D
+var _ocean_players: Array[AudioStreamPlayer3D] = []
+var _wind: AudioStreamPlayer
 
 func _ready() -> void:
 	_init_xr()
 	var sun := WorldBuilder.build_environment(self)
-	var sand := WorldBuilder.build_sand(self)
-	WorldBuilder.build_ocean(self)
+	beach_root = Node3D.new()
+	beach_root.name = "Playa"
+	add_child(beach_root)
+	var sand := WorldBuilder.build_sand(beach_root)
+	var ocean := WorldBuilder.build_ocean(beach_root)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2026
 	var noise: FastNoiseLite = sand.get_meta("noise")
@@ -27,12 +36,18 @@ func _ready() -> void:
 		Vector3(-15, 0, 12), Vector3(16, 0, 11), Vector3(-4, 0, 14), Vector3(5, 0, 16), Vector3(-22, 0, 5), Vector3(24, 0, 4)]
 	for p in palm_spots:
 		p.y = WorldBuilder.sand_height(p.x, p.z, noise) - 0.1
-		WorldBuilder.build_palm(self, p, rng)
-	WorldBuilder.build_rocks(self, rng, noise)
+		WorldBuilder.build_palm(beach_root, p, rng)
+	WorldBuilder.build_rocks(beach_root, rng, noise)
 	_build_audio()
 	_build_rig()
 	_build_screen()
 	_build_panel()
+	scenarios = Scenarios.new()
+	scenarios.name = "Escenarios"
+	add_child(scenarios)
+	scenarios.setup(sun.get_meta("world_env"), sun, beach_root, sand, ocean)
+	scenarios.applied.connect(_on_scenario_applied)
+	scenarios.apply(_load_scenario())
 	sun.shadow_enabled = true
 
 
@@ -113,11 +128,12 @@ func _build_audio() -> void:
 	var ocean3 := ocean.duplicate()
 	ocean3.position = Vector3(25, 0.5, WorldBuilder.SHORE_Z - 2)
 	add_child(ocean3)
-	var wind := AudioStreamPlayer.new()
-	wind.stream = _loop_wav("res://audio/wind.wav")
-	wind.volume_db = -16.0
-	wind.autoplay = true
-	add_child(wind)
+	_ocean_players = [ocean, ocean2, ocean3]
+	_wind = AudioStreamPlayer.new()
+	_wind.stream = _loop_wav("res://audio/wind.wav")
+	_wind.volume_db = -16.0
+	_wind.autoplay = true
+	add_child(_wind)
 
 
 func _loop_wav(path: String) -> AudioStream:
@@ -151,6 +167,7 @@ func _place_screen() -> void:
 	_face_user(status_panel, head, basis, Vector3(-0.62, 0.34, -1.25))
 	_face_user(options_panel, head, basis, Vector3(0.7, 0.2, -1.2))
 	_face_user(settings_panel, head, basis, Vector3(0.78, -0.05, -1.15))
+	_face_user(scenarios_panel, head, basis, Vector3(0, 0.05, -1.2))
 
 
 func _face_user(node: Node3D, head: Vector3, basis: Basis, offset: Vector3) -> void:
@@ -198,7 +215,13 @@ func _build_panel() -> void:
 	if settings_ui:
 		settings_ui.setting.connect(_on_setting)
 		settings_ui.sync_from(screen)
+	scenarios_panel = _make_panel("PanelEscenarios", "res://scenes/scenarios_panel.tscn", Vector2(980, 710), PX)
+	scenarios_ui = scenarios_panel.get_scene_instance()
+	if scenarios_ui:
+		scenarios_ui.chosen.connect(_on_scenario_chosen)
+		scenarios_ui.closed.connect(func(): _show_scenarios(false))
 	_show_side("")
+	_show_scenarios(false)
 	_place_screen()
 
 
@@ -217,10 +240,61 @@ func _refresh_text() -> String:
 
 ## Solo uno de los dos paneles laterales a la vez: "options", "settings" o ninguno.
 func _show_side(which: String) -> void:
+	if which != "" and scenarios_panel:
+		scenarios_panel.visible = false
+		scenarios_panel.set("enabled", false)
 	for pair in [[options_panel, "options"], [settings_panel, "settings"]]:
 		var on: bool = pair[1] == which
 		pair[0].visible = on
 		pair[0].set("enabled", on)
+
+
+func _show_scenarios(on: bool) -> void:
+	scenarios_panel.visible = on
+	scenarios_panel.set("enabled", on)
+	if on:
+		_show_side("")
+		scenarios_ui.set_current(scenarios.current)
+
+
+func _on_scenario_chosen(id: String) -> void:
+	scenarios.apply(id)
+	_save_scenario(id)
+	scenarios_ui.set_current(id)
+
+
+## Sonido ambiente y nombre en la barra según el escenario.
+func _on_scenario_applied(def: Dictionary) -> void:
+	var beach: bool = def["kind"] == "beach"
+	for p in _ocean_players:
+		p.stream_paused = not beach
+	var wind_db: float = def.get("wind", -80.0)
+	_wind.stream_paused = wind_db <= -60.0
+	_wind.volume_db = wind_db
+	if ui:
+		ui.set_scene_name(def["name"])
+	if scenarios_ui:
+		scenarios_ui.set_current(def["id"])
+	if origin == null:
+		return
+	# La arena queda a ~0,4 m sobre el suelo de los demás escenarios: sin subir al jugador cae a través de ella.
+	if beach:
+		origin.global_position.y = maxf(origin.global_position.y, 1.0)
+	get_tree().create_timer(1.0).timeout.connect(_place_screen)
+
+
+func _load_scenario() -> String:
+	var cfg := ConfigFile.new()
+	if cfg.load("user://preferencias.cfg") == OK:
+		return cfg.get_value("escenario", "id", "playa")
+	return "playa"
+
+
+func _save_scenario(id: String) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load("user://preferencias.cfg")
+	cfg.set_value("escenario", "id", id)
+	cfg.save("user://preferencias.cfg")
 
 
 func _on_setting(key: String, value: Variant) -> void:
@@ -244,6 +318,7 @@ func _on_action(act: String) -> void:
 		"undo_seek": screen.undo_seek()
 		"toggle_settings": _show_side("" if settings_panel.visible else "settings")
 		"video_settings": _show_side("settings")
+		"scenarios": _show_scenarios(true)
 		"close": _show_side("")
 		"fullscreen":
 			screen.toggle_fullscreen()
@@ -269,6 +344,7 @@ func _on_right_button(name: String) -> void:
 			p.set("enabled", panel.visible)
 		if not panel.visible:
 			_show_side("")
+			_show_scenarios(false)
 		else:
 			_place_screen()
 

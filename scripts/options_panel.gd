@@ -7,7 +7,7 @@ var _sub: Label
 
 
 func _ready() -> void:
-	size = Vector2(470, 440)
+	size = Vector2(470, 515)
 	var bg := PanelContainer.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.add_theme_stylebox_override("panel", UIKit.glass(28, 26, 22))
@@ -44,6 +44,8 @@ func _ready() -> void:
 	col.add_child(UIKit.divider())
 	col.add_child(_gap(10))
 	col.add_child(UIKit.label("Opciones", 26))
+	col.add_child(_row("scenes", "Escenarios", "scenarios"))
+	col.add_child(UIKit.divider())
 	col.add_child(_row("screen_curved", "Ajustes de video", "video_settings"))
 	col.add_child(UIKit.divider())
 	col.add_child(_row("recenter", "Centrar vista", "recenter"))

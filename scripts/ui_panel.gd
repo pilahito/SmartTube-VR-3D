@@ -130,6 +130,10 @@ func show_undo() -> void:
 	_undo.visible = true
 
 
+func set_scene_name(scene_name: String) -> void:
+	_now.text = "%s · Big Buck Bunny" % scene_name
+
+
 func set_info(resolution: String, codec: String) -> void:
 	_res.text = resolution
 	_codec.text = codec
