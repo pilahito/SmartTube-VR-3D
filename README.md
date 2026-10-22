@@ -13,6 +13,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 - **Pantalla de inicio** (**☰ → Inicio**): barra lateral (Inicio, Escenarios, Pantalla, Centrar vista, Salir), la tarjeta del vídeo con su fotograma en vivo, escenarios sugeridos que se aplican con un clic y una barra rápida con playa, bosque, cyberpunk, espacio y salón. No hay datos de YouTube, así que en vez de vídeos recomendados enseña el clip local y escenarios.
 - **16 escenarios** (menú **☰ → Escenarios**): playa (normal, tropical, atardecer y de noche), bosque natural y mágico, montañas, espacio, ciudad cyberpunk y 7 salas (Retro Arcade, Gamer RGB, Cine clásico y cuatro salones). Cada uno tiene su cielo, luz, niebla, suelo y sonido; el último elegido se recuerda al volver a abrir la app. Excepto la playa, son entornos sencillos hechos por código que buscan parecerse en ambiente a los mockups, no réplicas.
+- **Catálogo de NebularVR** (pestaña *NebularVR* del menú Escenarios): descarga los panoramas 360° del [catálogo de NebularVR](https://github.com/pilahito/NebularVR-Quest/tree/main/catalogo) y los usa como paisaje, con su luz. Sigue el contrato de ese catálogo: solo descarga lo que lista `catalogo.json`, rechaza cualquier archivo cuyo SHA-256 o tamaño no coincida y limita las imágenes a 2:1 y 8192×4096. Lo descargado queda en caché y el último elegido se restaura aunque no haya conexión.
 - **Playa inmersiva**: océano animado (olas Gerstner y espuma en la orilla), arena con dunas y zona mojada,
   cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
 - **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
@@ -43,6 +44,7 @@ hecha con **Godot 4.7.2** y OpenXR.
 | Volumen | Slider junto al icono del altavoz |
 | Ajustes de pantalla | Botón **⚙**: abre el panel «Pantalla virtual» a tu derecha |
 | Pantalla grande / volver | Botón de **pantalla completa** (esquinas) |
+| Usar un entorno de NebularVR | **☰** → **Escenarios** → pestaña **NebularVR** (necesita internet la primera vez) |
 | Abrir el inicio | **☰** → **Inicio** |
 | Cambiar de escenario | **☰** → **Escenarios** y pulsa una casilla |
 | Centrar la vista | **☰** → **Centrar vista** |

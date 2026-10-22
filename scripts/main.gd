@@ -19,6 +19,9 @@ var scenarios_panel: Node3D
 var scenarios_ui: Control
 var home_panel: Node3D
 var home_ui: Control
+var catalog: NebularCatalog
+var _catalog_tex := {}         # id del catálogo -> textura ya descargada
+var _catalog_entries := {}     # id del catálogo -> entrada validada
 var beach_root: Node3D
 var _ocean_players: Array[AudioStreamPlayer3D] = []
 var _wind: AudioStreamPlayer
@@ -49,7 +52,8 @@ func _ready() -> void:
 	add_child(scenarios)
 	scenarios.setup(sun.get_meta("world_env"), sun, beach_root, sand, ocean)
 	scenarios.applied.connect(_on_scenario_applied)
-	scenarios.apply(_load_scenario())
+	_build_catalog()
+	_restore_scenario()
 	sun.shadow_enabled = true
 
 
@@ -261,6 +265,67 @@ func _show_side(which: String) -> void:
 		pair[0].set("enabled", on)
 
 
+func _build_catalog() -> void:
+	catalog = NebularCatalog.new()
+	catalog.name = "CatalogoNebularVR"
+	# Para pruebas: NEBULAR_CATALOG_URL apunta a otra carpeta con catalogo.json (por ejemplo, un servidor local).
+	if OS.has_environment("NEBULAR_CATALOG_URL"):
+		catalog.base_url = OS.get_environment("NEBULAR_CATALOG_URL")
+	add_child(catalog)
+	catalog.list_ready.connect(_on_catalog_list)
+	catalog.image_ready.connect(func(id: String, tex: ImageTexture):
+		_catalog_tex[id] = tex
+		scenarios_ui.set_catalog_texture(id, tex))
+	catalog.failed.connect(func(what: String): scenarios_ui.set_catalog_status(what))
+	scenarios_ui.catalog_opened.connect(func():
+		scenarios_ui.set_catalog_status("Conectando con el catálogo de NebularVR…")
+		catalog.fetch_list())
+	scenarios_ui.catalog_chosen.connect(_on_catalog_chosen)
+
+
+func _on_catalog_list(entries: Array) -> void:
+	scenarios_ui.set_catalog_entries(entries)
+	for e in entries:
+		_catalog_entries[e["id"]] = e
+		if _catalog_tex.has(e["id"]):
+			scenarios_ui.set_catalog_texture(e["id"], _catalog_tex[e["id"]])
+		else:
+			catalog.fetch_image(e)
+	scenarios_ui.set_current(scenarios.current)
+
+
+func _on_catalog_chosen(entry: Dictionary) -> void:
+	if not _catalog_tex.has(entry["id"]):
+		scenarios_ui.set_catalog_status("Esa imagen aún se está descargando…")
+		return
+	var id := _register_catalog_scenario(entry, _catalog_tex[entry["id"]])
+	_on_scenario_chosen(id)
+
+
+func _register_catalog_scenario(entry: Dictionary, tex: Texture2D) -> String:
+	var id: String = "nebular:" + entry["id"]
+	scenarios.register_panorama(id, entry["name"], tex, Color.html(entry["sun"]), entry["energy"])
+	return id
+
+
+## Recupera el último escenario; los del catálogo solo si su imagen sigue en la caché y su hash coincide.
+func _restore_scenario() -> void:
+	var cfg := ConfigFile.new()
+	var id := "playa"
+	if cfg.load("user://preferencias.cfg") == OK:
+		id = cfg.get_value("escenario", "id", "playa")
+		if id.begins_with("nebular:"):
+			var entry := NebularCatalog.validate_entry(cfg.get_value("escenario", "nebular_entry", {}))
+			var tex: ImageTexture = catalog.load_cached(entry) if not entry.is_empty() else null
+			if tex:
+				_catalog_tex[entry["id"]] = tex
+				_catalog_entries[entry["id"]] = entry
+				id = _register_catalog_scenario(entry, tex)
+			else:
+				id = "playa"
+	scenarios.apply(id)
+
+
 func _show_scenarios(on: bool) -> void:
 	scenarios_panel.visible = on
 	scenarios_panel.set("enabled", on)
@@ -306,17 +371,12 @@ func _on_scenario_applied(def: Dictionary) -> void:
 	get_tree().create_timer(1.0).timeout.connect(_place_screen)
 
 
-func _load_scenario() -> String:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://preferencias.cfg") == OK:
-		return cfg.get_value("escenario", "id", "playa")
-	return "playa"
-
-
 func _save_scenario(id: String) -> void:
 	var cfg := ConfigFile.new()
 	cfg.load("user://preferencias.cfg")
 	cfg.set_value("escenario", "id", id)
+	if id.begins_with("nebular:") and _catalog_entries.has(id.trim_prefix("nebular:")):
+		cfg.set_value("escenario", "nebular_entry", _catalog_entries[id.trim_prefix("nebular:")])
 	cfg.save("user://preferencias.cfg")
 
 

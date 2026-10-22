@@ -99,6 +99,7 @@ var sand: StaticBody3D
 var ocean: MeshInstance3D
 var current := ""
 var _root: Node3D
+var extra := {}            # escenarios añadidos en ejecución (catálogo de NebularVR), por id
 var _anim: Array = []      # {kind, node, ...} elementos que se mueven o parpadean
 var _time := 0.0
 
@@ -114,6 +115,22 @@ static func get_def(id: String) -> Dictionary:
 		if d["id"] == id:
 			return d
 	return LIST[7]
+
+
+## Añade un escenario de panorama 360° (por ejemplo del catálogo de NebularVR). Devuelve su definición.
+func register_panorama(id: String, display_name: String, texture: Texture2D, sun: Color, energy: float) -> Dictionary:
+	var d := {
+		"id": id, "name": display_name, "kind": "panorama", "panorama": texture,
+		"sky_top": sun.darkened(0.6), "sky_horizon": sun.darkened(0.3), "ground": Color(0.06, 0.07, 0.1),
+		"sun": sun, "sun_energy": energy, "sun_pitch": -35.0, "sun_yaw": 160.0,
+		"ambient_energy": 0.4 + energy * 0.6, "accent": sun, "wind": -80.0,
+	}
+	extra[id] = d
+	return d
+
+
+func find_def(id: String) -> Dictionary:
+	return extra[id] if extra.has(id) else get_def(id)
 
 
 ## Enlaza el mundo de la playa y el entorno que ya existen en la escena principal.
@@ -153,7 +170,7 @@ func _process(delta: float) -> void:
 
 
 func apply(id: String) -> void:
-	var d := get_def(id)
+	var d := find_def(id)
 	current = d["id"]
 	_anim.clear()
 	for c in _root.get_children():
@@ -174,6 +191,7 @@ func apply(id: String) -> void:
 		"city": _city(d)
 		"space": _space(d)
 		"room": _room(d)
+		"panorama": _panorama(d)
 	applied.emit(d)
 
 
@@ -181,6 +199,18 @@ func apply(id: String) -> void:
 
 func _apply_light_and_sky(d: Dictionary) -> void:
 	var kind: String = d["kind"]
+	if kind == "panorama":
+		var pano := PanoramaSkyMaterial.new()
+		pano.panorama = d["panorama"]
+		env.sky.sky_material = pano
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		env.ambient_light_energy = d["ambient_energy"]
+		env.fog_enabled = false
+		sun.visible = true
+		sun.light_color = d["sun"]
+		sun.light_energy = d["sun_energy"]
+		sun.rotation_degrees = Vector3(d["sun_pitch"], d["sun_yaw"], 0)
+		return
 	sky_proc.sky_top_color = d["sky_top"]
 	sky_proc.sky_horizon_color = d["sky_horizon"]
 	sky_proc.ground_horizon_color = d["sky_horizon"]
@@ -333,7 +363,7 @@ func _scatter(mesh: Mesh, xforms: Array[Transform3D], colors: Array[Color] = [])
 
 func _build_ground(d: Dictionary) -> void:
 	var kind: String = d["kind"]
-	if kind == "room" or kind == "space":
+	if kind == "room" or kind == "space" or kind == "panorama":
 		return
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(500, 500)
@@ -642,6 +672,20 @@ func _space(d: Dictionary) -> void:
 	ring.outer_radius = 7.6
 	_mesh_node(ring, Vector3(0, 0.02, 0), _mat(d["accent"], true, 1.6))
 	_static_floor(Vector3(15, 0.2, 15), Vector3(0, -0.1, 0))
+
+
+# ---------------------------------------------------------------- panoramas (catálogo)
+
+## Plataforma circular bajo el espectador; el paisaje es la propia imagen 360°.
+func _panorama(d: Dictionary) -> void:
+	var disc := _cyl(8.0, 0.2, Vector3(0, -0.1, 0), _mat(Color(0.06, 0.07, 0.1), false, 1.0, 0.8))
+	var ring := TorusMesh.new()
+	ring.inner_radius = 7.85
+	ring.outer_radius = 8.0
+	var r := _mesh_node(ring, Vector3(0, 0.01, 0), _mat(d["accent"], true, 1.8))
+	r.scale = Vector3(1, 0.1, 1)
+	_static_floor(Vector3(16, 0.2, 16), Vector3(0, -0.1, 0))
+	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 # ---------------------------------------------------------------- salas
