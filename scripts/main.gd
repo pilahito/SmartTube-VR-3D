@@ -159,6 +159,11 @@ func _build_panel() -> void:
 	if ui:
 		ui.action.connect(_on_action)
 		ui.volume_changed.connect(func(v): screen.set_volume(v))
+		ui.seek_to.connect(func(r): screen.seek_ratio(r))
+		ui.screen_size_changed.connect(func(v): screen.width = v)
+		ui.screen_distance_changed.connect(func(v):
+			screen_distance = v
+			_place_screen())
 	_place_screen()
 
 

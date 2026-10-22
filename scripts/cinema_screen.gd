@@ -80,6 +80,11 @@ func seek(delta: float) -> void:
 	player.stream_position = p
 
 
+func seek_ratio(r: float) -> void:
+	var len := player.get_stream_length()
+	player.stream_position = clampf(r, 0.0, 1.0) * maxf(len - 0.5, 0.0)
+
+
 func set_volume(v: float) -> void:
 	player.volume_db = linear_to_db(maxf(v, 0.001))
 
