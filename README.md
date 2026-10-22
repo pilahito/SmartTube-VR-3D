@@ -15,7 +15,9 @@ hecha con **Godot 4.7.2** y OpenXR.
   cielo procedural con sol, 10 palmeras y rocas hechas por código, niebla suave en el horizonte.
 - **Sonido ambiente**: olas en 3D (las oyes venir del mar) y viento suave. Generados por código (CC0).
 - **Pantalla de cine curva** flotando delante, con un vídeo de prueba (Big Buck Bunny).
-- **Panel de control** de cristal oscuro que se maneja con el rayo láser de los mandos: barra de progreso para saltar a cualquier punto, iconos de reproducción y sliders de volumen, tamaño y distancia de la pantalla. Su diseño se basa en los mockups de [SmartTube VR](https://github.com/pilahito/SmartTube-VR/tree/main/docs/interfaz).
+- **Barra de reproducción** de cristal oscuro: reproducir/pausa, ±10 s, barra de progreso en la que puedes pulsar para saltar, volumen, **Deshacer salto** (5 s después de cada salto) y la resolución del vídeo.
+- **Panel «Pantalla virtual»** (botón ⚙): pantalla curva o plana, curvatura, formato (21:9, 16:9, 32:9, 4:3 o «Ajustar» al vídeo), tamaño en pulgadas, distancia, altura e inclinación, los preajustes *Cine*, *Tumbado (techo)* y *Escritorio*, **3D lado a lado** y proyección **180°/360°**.
+- Su diseño se basa en los mockups de [SmartTube VR](https://github.com/pilahito/SmartTube-VR/tree/main/docs/interfaz).
 
 | Reproductor | Pantalla virtual |
 |---|---|
@@ -23,16 +25,19 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 <sub>*Mockups de referencia del diseño (de [SmartTube VR](https://github.com/pilahito/SmartTube-VR)), no capturas de esta app.*</sub>
 
+**Del mockup, lo que todavía no está** (necesita datos de YouTube o de la app Android, y esta fase solo reproduce un vídeo local): Wi-Fi y batería de la barra de estado (Godot 4.7 no tiene API para leerlos), likes, SponsorBlock, DeArrow, subtítulos, comentarios y descripción, el inicio con vídeos recomendados y los 16 escenarios (aquí solo hay playa).
+
 ## Controles
 
 | Acción | Cómo |
 |---|---|
 | Pulsar botones del panel | Apunta con el láser (cualquier mando) y aprieta el **gatillo** |
-| Reproducir / pausa y ±10 s | Botones del panel |
+| Reproducir / pausa y ±10 s | Botones de la barra |
 | Saltar a un punto del vídeo | Pulsa o arrastra la barra roja de progreso |
-| Volumen | Slider **Volumen** |
-| Agrandar / achicar la pantalla | Slider **Tamaño** |
-| Acercar / alejar la pantalla | Slider **Distancia** |
+| Volver al punto anterior a un salto | **Deshacer salto** (aparece 5 s) |
+| Volumen | Slider junto al icono del altavoz |
+| Ajustes de pantalla | Botón **⚙**: abre el panel «Pantalla virtual» a tu derecha |
+| Pantalla grande / volver | Botón de **pantalla completa** (esquinas) |
 | Centrar la vista | Botón **Centrar** |
 | Mostrar / ocultar el panel | Botón **B** (mando derecho) |
 | Girar | **Joystick derecho** izquierda/derecha (giro por pasos de 30°) |
