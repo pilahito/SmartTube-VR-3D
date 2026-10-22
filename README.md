@@ -30,6 +30,8 @@ hecha con **Godot 4.7.2** y OpenXR.
 
 **Del mockup, lo que todavía no está** (necesita datos de YouTube o de la app Android, y esta fase solo reproduce un vídeo local): Wi-Fi y batería de la barra de estado (Godot 4.7 no tiene API para leerlos), likes, SponsorBlock, DeArrow, subtítulos, comentarios, descripción, el buscador y los vídeos recomendados reales del inicio.
 
+**Modelos 3D propios:** los muebles de los salones (sofá, sillón, mesa de centro, lámpara, planta y aparador) se construyen por código con aristas redondeadas. Si quieres usar modelos de más calidad, deja un archivo `.glb` en `res://models/` con el nombre de la pieza (`sofa`, `armchair`, `coffee_table`, `floor_lamp`, `plant`, `sideboard`) y se usará en lugar de la versión por código. En las Quest conviene que cada pieza tenga pocos miles de triángulos.
+
 ## Controles
 
 | Acción | Cómo |

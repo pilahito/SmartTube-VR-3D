@@ -795,21 +795,19 @@ func _room_cinema(d: Dictionary) -> void:
 
 ## Salón. variant: "classic", "night" (chimenea con fuego) o "modern" (ventanal y líneas limpias).
 func _room_lounge(d: Dictionary, window: Color, variant: String) -> void:
-	var fabric := _mat(d["accent"], false, 1.0, 0.95)
-	var wood := _mat(Color(0.3, 0.19, 0.1) if variant != "modern" else Color(0.75, 0.62, 0.45), false, 1.0, 0.7)
+	var wood_c := Color(0.3, 0.19, 0.1) if variant != "modern" else Color(0.75, 0.62, 0.45)
+	var wood := _mat(wood_c, false, 1.0, 0.7)
 	var rug_c: Color = {"classic": Color(0.55, 0.25, 0.18), "night": Color(0.3, 0.1, 0.07), "modern": Color(0.9, 0.9, 0.88)}[variant]
-	_box(Vector3(9.0, 0.03, 6.0), Vector3(0, 0.02, 3.0), _mat(rug_c, false, 1.0, 1.0))
-	# sofa en L, mesa de centro y puf
-	_box(Vector3(4.2, 0.8, 1.3), Vector3(0, 0.4, 9.2), fabric)
-	_box(Vector3(4.2, 1.1, 0.4), Vector3(0, 1.0, 9.85), fabric)
-	_box(Vector3(0.4, 0.7, 1.3), Vector3(-2.1, 0.75, 9.2), fabric)
-	_box(Vector3(0.4, 0.7, 1.3), Vector3(2.1, 0.75, 9.2), fabric)
-	_box(Vector3(1.6, 0.5, 1.2), Vector3(-4.0, 0.25, 6.5), fabric)
-	_box(Vector3(2.4, 0.08, 1.1), Vector3(0, 0.5, 6.0), wood)
-	for x in [-1.0, 1.0]:
-		for z in [5.6, 6.4]:
-			_box(Vector3(0.08, 0.46, 0.08), Vector3(x, 0.25, z), wood)
-	_cyl(0.18, 0.28, Vector3(-0.5, 0.68, 6.0), _mat(Color(0.9, 0.9, 0.85)))
+	Furniture.rug(_root, Vector3(0, 0.02, 3.5), Vector2(9.0, 6.0), rug_c)
+	# sofá, sillón, mesa de centro, aparador y plantas (muebles redondeados, ver Furniture)
+	Furniture.sofa(_root, Vector3(0, 0, 9.4), 0.0, d["accent"])
+	Furniture.armchair(_root, Vector3(-4.2, 0, 6.2), deg_to_rad(-25.0), d["accent"].darkened(0.1))
+	Furniture.coffee_table(_root, Vector3(0, 0, 6.2), 0.0, wood_c)
+	Furniture.sideboard(_root, Vector3(0, 0, -ROOM.z * 0.5 + 0.5), 0.0, wood_c)
+	Furniture.plant(_root, Vector3(-ROOM.x * 0.5 + 1.0, 0, 9.0), 1.2)
+	Furniture.plant(_root, Vector3(ROOM.x * 0.5 - 1.2, 0, -10.0), 1.0)
+	Furniture.floor_lamp(_root, Vector3(5.0, 0, 8.0), Color(1.0, 0.9, 0.7))
+	_omni(Vector3(5.0, 1.9, 8.0), Color(1.0, 0.85, 0.6), 0.9 if variant != "modern" else 0.5, 9.0)
 	# ventanas con marco y travesaños
 	var strong := 3.0 if variant == "modern" else 1.8
 	for z in [-6.0, 0.0, 6.0]:
@@ -828,13 +826,6 @@ func _room_lounge(d: Dictionary, window: Color, variant: String) -> void:
 			var bc := Color.from_hsv(rng.randf(), 0.5, 0.75)
 			var bh := rng.randf_range(0.45, 0.75)
 			_box(Vector3(0.3, bh, 0.16), Vector3(shelf_x + 0.15, 0.55 + lvl * 1.0 + bh * 0.5, 2.4 + k * 0.4), _mat(bc))
-	# planta y lámpara de pie
-	_cyl(0.3, 0.5, Vector3(-ROOM.x * 0.5 + 1.0, 0.25, 9.0), _mat(Color(0.55, 0.3, 0.2)))
-	for k in 5:
-		_ball(0.35, Vector3(-ROOM.x * 0.5 + 1.0 + rng.randf_range(-0.2, 0.2), 0.9 + k * 0.18, 9.0 + rng.randf_range(-0.2, 0.2)), _mat(Color(0.15, 0.45, 0.2)), 1.3)
-	_cyl(0.03, 1.8, Vector3(5.0, 0.9, 8.0), _mat(Color(0.2, 0.2, 0.22)))
-	_ball(0.3, Vector3(5.0, 1.9, 8.0), _mat(Color(1.0, 0.9, 0.7), true, 2.5))
-	_omni(Vector3(5.0, 1.9, 8.0), Color(1.0, 0.85, 0.6), 0.9 if variant != "modern" else 0.5, 9.0)
 	# cuadros a los lados de la pantalla
 	var art: Color = d["accent2"] if variant != "night" else Color(0.5, 0.35, 0.2)
 	_picture(Vector3(-8.5, 3.6, -ROOM.z * 0.5 + 0.15), Vector2(2.2, 1.6), art, wood.albedo_color)
@@ -852,7 +843,6 @@ func _room_lounge(d: Dictionary, window: Color, variant: String) -> void:
 		_anim.append({"kind": "flicker", "node": fl, "base": 2.6})
 	if variant == "modern":
 		_box(Vector3(0.4, 0.4, 3.2), Vector3(-ROOM.x * 0.5 + 0.4, 0.2, -3.0), _mat(Color(0.25, 0.26, 0.28)))
-		_box(Vector3(3.0, 0.6, 0.5), Vector3(0, 0.3, -ROOM.z * 0.5 + 0.4), _mat(Color(0.2, 0.21, 0.23)))
 
 
 func _room_future(d: Dictionary) -> void:
